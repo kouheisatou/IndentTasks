@@ -1,5 +1,6 @@
 package com.KHsoftware.IndentTasks
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.util.Log
@@ -12,8 +13,10 @@ import androidx.core.view.marginLeft
 
 // できるだけ画面描画は描画するだけ、内部処理の結果を出すだけにする -> redraw()
 // todo Taskを継承してmasterTaskを作成、これは一つしか存在しないsingleton
+// todo dragLinearLayoutで選択中のタスクを同じ階層内でドラッグできるように
 
-class Task(var done: Boolean, var contents: String, val subTasks: MutableList<Task>, val depth: Int){
+open class Task(var done: Boolean, var contents: String, val subTasks: MutableList<Task>, val depth: Int){
+
     /** このタスクの選択状態 **/
     var selected = false
     /** 1つ上の階層のタスクの選択状態 **/
@@ -82,7 +85,7 @@ class Task(var done: Boolean, var contents: String, val subTasks: MutableList<Ta
     /**
      * このタスクの情報をテキストに書き出す
      */
-    fun export(): String{
+    open fun export(): String{
         var tab = ""
         for(i in 0 until depth){
             tab += "\t"
@@ -101,7 +104,7 @@ class Task(var done: Boolean, var contents: String, val subTasks: MutableList<Ta
     /**
      * このタスクの情報からAndroidの画面上のレイアウトを生成
      */
-    fun initUI(context: Context, parentView: LinearLayout){
+    open fun initUI(context: Context, parentView: LinearLayout){
         subtaskLinearLayout = LinearLayout(context)
         subtaskLinearLayout.orientation = LinearLayout.VERTICAL
         var layoutParams = LinearLayout.LayoutParams(

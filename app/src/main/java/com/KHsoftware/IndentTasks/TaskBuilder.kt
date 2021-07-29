@@ -7,15 +7,12 @@ import java.io.FileReader
 
 class TaskBuilder(private val file: File) {
 
-    fun build(): MutableList<Task>{
-        if(!file.exists()) return mutableListOf()
+    fun build(){
+        if(!file.exists()) return
 
         val fileReader = FileReader(file)
         val bufferdReader = BufferedReader(fileReader)
 
-        val taskList = mutableListOf<Task>()
-
-        var preAddTask: Task
         while(true){
             val line = bufferdReader.readLine() ?: break
             /** 階層の深さ **/
@@ -26,20 +23,17 @@ class TaskBuilder(private val file: File) {
             val content = line.replace("\t", "").substring(3, line.length)
 
             if(indentCount == 0){
-                val task = Task(isDone, content, mutableListOf(), indentCount)
-                taskList.add(task)
+                MasterTask.contents = content
+                MasterTask.done = isDone
             }else{
-                taskList.last().addSubtask(isDone, content, indentCount)
+                MasterTask.addSubtask(isDone, content, indentCount)
             }
         }
-
-        return taskList
     }
 }
 
-fun debugBuilder(text: String): MutableList<Task>{
+fun debugBuilder(text: String){
     val lines = text.split("\n")
-    val taskList = mutableListOf<Task>()
 
     for(line in lines){
 
@@ -53,14 +47,13 @@ fun debugBuilder(text: String): MutableList<Task>{
 
         /** タスクの内容 **/
         val content = line.replace("\t", "").substring(3, line.length-indentCount)
-        Log.d("builder", content.toString())
+        Log.d("builder", content)
 
         if(indentCount == 0){
-            val task = Task(isDone, content, mutableListOf(), indentCount)
-            taskList.add(task)
+            MasterTask.contents = content
+            MasterTask.done = isDone
         }else{
-            taskList.last().addSubtask(isDone, content, indentCount)
+            MasterTask.addSubtask(isDone, content, indentCount)
         }
     }
-    return taskList
 }
