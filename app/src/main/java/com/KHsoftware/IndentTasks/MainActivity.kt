@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import kotlinx.android.synthetic.main.activity_main.*
 
+// todo 折り畳み,スワイプで
+
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,7 +30,7 @@ class MainActivity : AppCompatActivity() {
                 "\t\t\t\t[ ]Sub4Task2\n" +
                 "\t\t\t\t\t[ ]Sub5Task1\n" +
                 "\t\t\t\t\t\t[ ]Sub6Task1\n" +
-                "\t\t\t\t\t\t\t[x]Sub7Task1\n" +
+                "\t\t\t\t\t\t\t[x]Sub7Taskaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1\n" +
                 "\t\t\t\t\t\t\t[x]Sub7Task2\n" +
                 "\t\t\t\t[ ]Sub4Task3\n" +
                 "\t\t\t\t[ ]Sub4Task4\n" +
@@ -39,12 +41,12 @@ class MainActivity : AppCompatActivity() {
         for(i in taskList){
             printText += i.export()
         }
-        text.text = printText
-        text.typeface = Typeface.MONOSPACE
+//        text.text = printText
+//        text.typeface = Typeface.MONOSPACE
 
-//        for(i in taskList){
-//            i.initUI(taskContainer, this)
-//        }
+        for(i in taskList){
+            i.initUI(this, taskContainer)
+        }
 
     }
 }

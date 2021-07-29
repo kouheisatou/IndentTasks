@@ -1,14 +1,27 @@
 package com.KHsoftware.IndentTasks
 
 import android.content.Context
+import android.graphics.Color
 import android.util.Log
+import android.view.View
+import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.marginLeft
 
+// できるだけ画面描画は描画するだけ、内部処理の結果を出すだけにする -> redraw()
+// todo Taskを継承してmasterTaskを作成、これは一つしか存在しないsingleton
+
 class Task(var done: Boolean, var contents: String, val subTasks: MutableList<Task>, val depth: Int){
-    // todo 通し番号で管理
+    /** このタスクの選択状態 **/
+    var selected = false
+    /** 1つ上の階層のタスクの選択状態 **/
+    var parentSelected = false
+    /** このタスクを親とする階層全体の線形レイアウトView **/
+    lateinit var subtaskLinearLayout: LinearLayout
+    /** 各タスクのチェックボックスView **/
+    lateinit var chk: CheckBox
 
     fun checkAllSubtaskDone(): Boolean{
         var done = true
@@ -24,8 +37,31 @@ class Task(var done: Boolean, var contents: String, val subTasks: MutableList<Ta
         }
     }
 
-    fun deleteSubtask(index: Int){
+    fun deleteSubtaskAt(index: Int){
         subTasks.removeAt(index)
+    }
+
+    fun deleteSubtaskSelected(){
+        for(i in subTasks.withIndex()){
+            if(i.value.selected){
+                subTasks.removeAt(i.index)
+            }
+        }
+    }
+
+    fun makeAllSubtaskSelected(){
+        for(i in subTasks){
+            i.parentSelected = true
+            i.makeAllSubtaskSelected()
+            i.subtaskLinearLayout.setBackgroundColor(Color.parseColor("#DDDDDD"))
+        }
+    }
+    fun makeAllSubtaskUnselected(){
+        for(i in subTasks){
+            i.parentSelected = false
+            i.makeAllSubtaskUnselected()
+            i.subtaskLinearLayout.setBackgroundColor(Color.parseColor("#FFFFFF"))
+        }
     }
 
     /**
@@ -43,8 +79,10 @@ class Task(var done: Boolean, var contents: String, val subTasks: MutableList<Ta
         }
     }
 
+    /**
+     * このタスクの情報をテキストに書き出す
+     */
     fun export(): String{
-
         var tab = ""
         for(i in 0 until depth){
             tab += "\t"
@@ -60,16 +98,43 @@ class Task(var done: Boolean, var contents: String, val subTasks: MutableList<Ta
         return text
     }
 
-    fun initUI(taskContainer: LinearLayout, context: Context){
-        val chk = CheckBox(context)
-        val textView = TextView(context)
-        val linearLayout = LinearLayout(context)
-        linearLayout.orientation = LinearLayout.HORIZONTAL
-        linearLayout.addView(chk)
-        linearLayout.addView(textView)
+    /**
+     * このタスクの情報からAndroidの画面上のレイアウトを生成
+     */
+    fun initUI(context: Context, parentView: LinearLayout){
+        subtaskLinearLayout = LinearLayout(context)
+        subtaskLinearLayout.orientation = LinearLayout.VERTICAL
+        var layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        layoutParams.setMargins(40, 10, 0, 0)
+        subtaskLinearLayout.layoutParams = layoutParams
+
+        chk = CheckBox(context)
+        chk.layoutParams = layoutParams
+        chk.setPadding(0, 0, 15, 0)
+        chk.isChecked = done
+        chk.text = contents
+        chk.setOnLongClickListener(){
+            if(!parentSelected){
+                if(selected){
+                    selected = false
+                    subtaskLinearLayout.setBackgroundColor(Color.parseColor("#FFFFFF"))
+                    makeAllSubtaskUnselected()
+                }else{
+                    selected = true
+                    subtaskLinearLayout.setBackgroundColor(Color.parseColor("#DDDDDD"))
+                    makeAllSubtaskSelected()
+                }
+            }
+            true
+        }
+
+        subtaskLinearLayout.addView(chk)
+        parentView.addView(subtaskLinearLayout)
 
         for(task in subTasks){
-            task.initUI(taskContainer, context)
+            task.initUI(context, subtaskLinearLayout)
         }
     }
 }
