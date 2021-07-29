@@ -56,6 +56,9 @@ class MainActivity : AppCompatActivity() {
 //            i.initUI(this, taskContainer)
 //        }
 
+        deleteBtn.setOnClickListener(){
+            MasterTask.deleteSubtaskSelected(this, taskContainer)
+        }
 
 
     }

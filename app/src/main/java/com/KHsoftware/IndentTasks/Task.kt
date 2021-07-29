@@ -26,7 +26,7 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
     /** 各タスクのチェックボックスView **/
     lateinit var chk: CheckBox
 
-    fun checkAllSubtaskDone(): Boolean{
+    fun checkAllSubtask(): Boolean{
         var done = true
         for(i in subTasks){
             if(!i.done) done = false
@@ -44,10 +44,13 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         subTasks.removeAt(index)
     }
 
-    fun deleteSubtaskSelected(){
-        for(i in subTasks.withIndex()){
-            if(i.value.selected){
-                subTasks.removeAt(i.index)
+    fun deleteSubtaskSelected(context: Context, parentView: LinearLayout){
+        for(i in subTasks){
+            if(i.selected || i.parentSelected){
+                // タスクを削除
+                subTasks.remove(i)
+                // Viewを削除
+                this.subtaskLinearLayout.removeView(i.subtaskLinearLayout)
             }
         }
     }
