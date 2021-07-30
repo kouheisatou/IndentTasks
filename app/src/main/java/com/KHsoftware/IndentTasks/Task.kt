@@ -15,7 +15,7 @@ import androidx.core.view.marginLeft
 // todo Taskを継承してmasterTaskを作成、これは一つしか存在しないsingleton
 // todo dragLinearLayoutで選択中のタスクを同じ階層内でドラッグできるように
 
-open class Task(var done: Boolean, var contents: String, val subTasks: MutableList<Task>, val depth: Int){
+open class Task(var done: Boolean, var contents: String, val subTasks: MutableList<Task> = mutableListOf(), val depth: Int){
 
     /** このタスクの選択状態 **/
     var selected = false
@@ -123,40 +123,6 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
     }
 
     /**
-     * このタスクを選択するか、選択を解除するか
-     * @param select true:選択, false:選択解除
-     */
-//    fun selectThis(select: Boolean, parentSelected: Boolean){
-//
-//        // 以前に選択していたタスクの選択解除
-//        MasterTask.unselectAll()
-//        if(select){
-//            // 新規に選択したタスクを選択中としてマスタータスクで保持
-//            MasterTask.selectedTask = this
-//            this.selected = select
-//        }
-//        else{
-//            // このタスクは選択されていないが、このタスクより上の階層のタスクで選択されている場合は、MasterTask.selectedTaskを変更しない
-//            if(!parentSelected){
-//                MasterTask.selectedTask = null
-//            }
-//        }
-//
-//        Log.d("selected", MasterTask.selectedTask?.id.toString())
-//
-//        // 選択されたタスクに色を付ける
-//        val color = if(select || parentSelected){ "#DDDDDD" }else{ "#FFFFFF" }
-//        subtaskLinearLayout.setBackgroundColor(Color.parseColor(color))
-//
-//        // サブタスクを選択状態を更新
-//        for(i in subTasks){
-//            i.selected = select
-//            i.selectThis(select = false, parentSelected = true)
-//            i.subtaskLinearLayout.setBackgroundColor(Color.parseColor(color))
-//        }
-//    }
-
-    /**
      * 自動的に適切な階層の一番最後へタスクを追加する
      * @param done タスクの状態
      * @param contents タスクの内容
@@ -172,9 +138,13 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         }
     }
 
-    fun addSubtask(done: Boolean, contents: String){
-
+    // このタスクの一番最後のサブタスクとして新規タスクを追加
+    fun addSubtask(context: Context, contents: String){
+        val newTask = Task(done = false, contents = contents, depth = this.depth+1)
+        this.subTasks += newTask
+        newTask.initUI(context, this.subtaskLinearLayout)
     }
+
 
     open fun findTaskById(id: Int): Task?{
         var result: Task? = null
@@ -210,6 +180,8 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
 
     /**
      * このタスクの情報からAndroidの画面上のレイアウトを生成
+     * タスクのインスタンスを生成したら実行し初期化する
+     * @param parentView 追加先のLinearLayout
      */
     open fun initUI(context: Context, parentView: LinearLayout){
         subtaskLinearLayout = LinearLayout(context)

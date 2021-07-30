@@ -38,14 +38,20 @@ class MainActivity : AppCompatActivity() {
                 "\t\t\t\t\t[ ]Sub4Task4\n" +
                 "\t\t\t\t\t\t[x]Sub5Task2"
 
+        // テキストからタスクを生成
         debugBuilder(sample)
+
+        // 全タスク初期化
         MasterTask.initUI(this, taskContainer)
+
+        // タスク追加
+        addButton.setOnClickListener(){
+            MasterTask.addTaskToSelected(this, editText.text.toString())
+            editText.setText("")
+        }
 
         Log.d("exportText", MasterTask.export())
 
-        MasterTask.selectAt(5, true)
-        MasterTask.unselectAll()
-        Log.d("findTaskById", MasterTask.findTaskById(5)?.contents.toString())
 
 
 

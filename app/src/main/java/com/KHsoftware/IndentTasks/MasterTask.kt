@@ -1,6 +1,7 @@
 package com.KHsoftware.IndentTasks
 
 import android.annotation.SuppressLint
+import android.content.Context
 
 @SuppressLint("StaticFieldLeak")
 object MasterTask: Task(false, "", mutableListOf(), 0){
@@ -16,6 +17,11 @@ object MasterTask: Task(false, "", mutableListOf(), 0){
             if(result != null) return result
         }
         return result
+    }
+
+    fun addTaskToSelected(context: Context, contents: String){
+        val selectedTask = selectedTask ?: MasterTask
+        selectedTask.addSubtask(context, contents)
     }
 
 
