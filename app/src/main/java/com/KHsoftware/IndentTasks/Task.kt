@@ -2,6 +2,7 @@ package com.KHsoftware.IndentTasks
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.util.Log
 import android.view.View
@@ -21,6 +22,8 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
     var selected = false
     /** このタスクを親とする階層全体の線形レイアウトView **/
     lateinit var subtaskLinearLayout: LinearLayout
+    /** 折り畳み/展開ボタン **/
+    lateinit var foldButton: ImageView
     /** タスクのID **/
     var id = generateId()
 
@@ -121,6 +124,8 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
                 task.deleteSubtaskById(id, context)
             }
         }
+        // サブタスクが0の時以外折り畳みボタン表示
+        foldButton.alpha = if(subTasks.size == 0) { 0f } else { 1f }
     }
 
     /**
@@ -144,6 +149,8 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         val newTask = Task(done = false, contents = contents, depth = this.depth+1)
         this.subTasks += newTask
         newTask.initUI(context, this.subtaskLinearLayout)
+        // サブタスクが0の時以外折り畳みボタン表示
+        foldButton.alpha = if(subTasks.size == 0) { 0f } else { 1f }
     }
 
 
@@ -207,7 +214,7 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         // 余白用View
         for(i in 0 until depth){
             val margin = TextView(context)
-            margin.text = "│"
+            margin.text = "  │"
             margin.gravity = LinearLayout.TEXT_ALIGNMENT_CENTER
             margin.width = 50
             rowLinearLayout.addView(margin)
@@ -233,14 +240,31 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         }
 
         // 確定ボタン
-        val confirmBtn = Button(context)
+        val confirmBtn = TextView(context)
         confirmBtn.text = "↩︎"
+        confirmBtn.textSize = 30f
         confirmBtn.isVisible = false
 
         // タスク編集時のEditText
         val editText = EditText(context)
         editText.setText(contentsText.text)
         editText.isVisible = false
+
+        //折り畳みボタン
+        foldButton = ImageView(context)
+        foldButton.setImageResource(R.drawable.ic_baseline_keyboard_arrow_down_24)
+        val buttonParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        foldButton.layoutParams = buttonParams
+        foldButton.setOnClickListener(){
+            foldButton.rotation += 180F
+            for(task in subTasks){
+                task.subtaskLinearLayout.isVisible = !task.subtaskLinearLayout.isVisible
+            }
+        }
+        // サブタスクが0の時以外折り畳みボタン表示
+        foldButton.alpha = if(subTasks.size == 0) { 0f } else { 1f }
 
         // タスク内容テキスト編集時の挙動
         contentsText.setOnClickListener(){
@@ -257,6 +281,7 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
 
 
         // 各Viewをアタッチ
+        rowLinearLayout.addView(foldButton)
         rowLinearLayout.addView(chk)
         rowLinearLayout.addView(contentsText)
         rowLinearLayout.addView(editText)
