@@ -190,7 +190,7 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         subtaskLinearLayout = LinearLayout(context)
         subtaskLinearLayout.orientation = LinearLayout.VERTICAL
         var layoutParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
         )
         subtaskLinearLayout.layoutParams = layoutParams
 
@@ -204,9 +204,17 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
             true
         }
 
+        // 余白用View
+        for(i in 0 until depth){
+            val margin = TextView(context)
+            margin.text = "│"
+            margin.gravity = LinearLayout.TEXT_ALIGNMENT_CENTER
+            margin.width = 50
+            rowLinearLayout.addView(margin)
+        }
+
         // 完了チェックボックス
         val chk = CheckBox(context)
-        chk.layoutParams = layoutParams
         chk.isChecked = done
         // 長押しでタスク選択
         chk.setOnLongClickListener(){
@@ -217,6 +225,7 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         // タスクの内容TextView
         val contentsText = TextView(context)
         contentsText.text = "($id)$contents"
+//        contentsText.setPadding(0, 0, 100, 0)
         // 長押しでタスク選択
         contentsText.setOnLongClickListener(){
             selectAt(this.id, !selected)
