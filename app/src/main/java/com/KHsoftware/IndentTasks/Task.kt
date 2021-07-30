@@ -23,8 +23,21 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
     var parentSelected = false
     /** このタスクを親とする階層全体の線形レイアウトView **/
     lateinit var subtaskLinearLayout: LinearLayout
-    /** 各タスクのチェックボックスView **/
+    /** このタスクのチェックボックスView **/
     lateinit var chk: CheckBox
+    /** タスクのID **/
+    var id = generateId()
+
+    open fun generateId() = ++MasterTask.taskNum
+
+    fun selectAt(id: Int){
+        if(id == this.id){
+            selectThis()
+        }
+        for(i in subTasks){
+            i.selectAt(id)
+        }
+    }
 
     fun checkAllSubtaskDone(): Boolean{
         var done = true
@@ -52,22 +65,29 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         }
     }
 
-    fun makeAllSubtaskSelected(){
+    fun selectThis(){
+        selected = true
+        subtaskLinearLayout.setBackgroundColor(Color.parseColor("#DDDDDD"))
+        MasterTask.selectedTask = this
         for(i in subTasks){
             i.parentSelected = true
-            i.makeAllSubtaskSelected()
+            i.selectThis()
             i.subtaskLinearLayout.setBackgroundColor(Color.parseColor("#DDDDDD"))
         }
     }
-    fun makeAllSubtaskUnselected(){
+    fun unselectThis(){
+        selected = false
+        subtaskLinearLayout.setBackgroundColor(Color.parseColor("#FFFFFF"))
+        MasterTask.selectedTask = null
         for(i in subTasks){
             i.parentSelected = false
-            i.makeAllSubtaskUnselected()
+            i.unselectThis()
             i.subtaskLinearLayout.setBackgroundColor(Color.parseColor("#FFFFFF"))
         }
     }
 
     /**
+     * 自動的に適切な階層の一番最後へタスクを追加する
      * @param done タスクの状態
      * @param contents タスクの内容
      * @param depth 追加するタスクの階層
@@ -80,6 +100,23 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         }else{
             subTasks.last().addSubtask(done, contents, depth)
         }
+    }
+
+    fun addSubtask(done: Boolean, contents: String){
+
+    }
+
+    open fun findTaskById(id: Int): Task?{
+        var result: Task? = null
+        for(task in subTasks){
+            if(id == task.id){
+                result = task
+            }else{
+                result = task.findTaskById(id)
+                if(result != null) return result
+            }
+        }
+        return result
     }
 
     /**
@@ -117,17 +154,13 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         chk.layoutParams = layoutParams
         chk.setPadding(0, 0, 15, 0)
         chk.isChecked = done
-        chk.text = contents
+        chk.text = "($id)$contents"
         chk.setOnLongClickListener(){
             if(!parentSelected){
                 if(selected){
-                    selected = false
-                    subtaskLinearLayout.setBackgroundColor(Color.parseColor("#FFFFFF"))
-                    makeAllSubtaskUnselected()
+                    unselectThis()
                 }else{
-                    selected = true
-                    subtaskLinearLayout.setBackgroundColor(Color.parseColor("#DDDDDD"))
-                    makeAllSubtaskSelected()
+                    selectThis()
                 }
             }
             true

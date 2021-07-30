@@ -43,6 +43,10 @@ class MainActivity : AppCompatActivity() {
 
         Log.d("exportText", MasterTask.export())
 
+        MasterTask.selectAt(5)
+
+
+
 //        var printText = ""
 //        for(i in taskList){
 //            printText += i.export()

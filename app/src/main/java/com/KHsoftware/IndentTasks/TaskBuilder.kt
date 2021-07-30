@@ -52,6 +52,7 @@ fun debugBuilder(text: String){
         if(indentCount == 0){
             MasterTask.contents = content
             MasterTask.done = isDone
+            MasterTask.taskNum = 0
         }else{
             MasterTask.addSubtask(isDone, content, indentCount)
         }
