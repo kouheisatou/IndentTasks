@@ -6,10 +6,10 @@ import android.graphics.Color
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.*
+import androidx.core.view.isVisible
 import androidx.core.view.marginLeft
+import kotlinx.android.synthetic.main.activity_main.view.*
 
 // できるだけ画面描画は描画するだけ、内部処理の結果を出すだけにする -> redraw()
 // todo Taskを継承してmasterTaskを作成、これは一つしか存在しないsingleton
@@ -19,12 +19,8 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
 
     /** このタスクの選択状態 **/
     var selected = false
-//    /** 1つ上の階層のタスクの選択状態 **/
-//    var parentSelected = false
     /** このタスクを親とする階層全体の線形レイアウトView **/
     lateinit var subtaskLinearLayout: LinearLayout
-    /** このタスクのチェックボックスView **/
-    lateinit var chk: CheckBox
     /** タスクのID **/
     var id = generateId()
 
@@ -113,6 +109,10 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
     fun deleteSubtaskById(id: Int, context: Context){
         for(task in subTasks){
             if(id == task.id){
+                // 選択されているタスクを削除した時
+                if(id == MasterTask.selectedTask?.id){
+                    MasterTask.selectedTask = null
+                }
                 subTasks.remove(task)
                 this.subtaskLinearLayout.removeView(task.subtaskLinearLayout)
                 return
@@ -184,28 +184,78 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
      * タスクのインスタンスを生成したら実行し初期化する
      * @param parentView 追加先のLinearLayout
      */
+    @SuppressLint("SetTextI18n")
     open fun initUI(context: Context, parentView: LinearLayout){
+        // タスク全体のLinearLayout
         subtaskLinearLayout = LinearLayout(context)
         subtaskLinearLayout.orientation = LinearLayout.VERTICAL
         var layoutParams = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
         )
-        layoutParams.setMargins(40, 10, 0, 0)
         subtaskLinearLayout.layoutParams = layoutParams
 
-        chk = CheckBox(context)
+        // 各タスクの横向き行LinearLayout
+        val rowLinearLayout = LinearLayout(context)
+        rowLinearLayout.orientation = LinearLayout.HORIZONTAL
+        rowLinearLayout.layoutParams = layoutParams
+        // 長押しでタスク選択
+        rowLinearLayout.setOnLongClickListener(){
+            selectAt(this.id, !selected)
+            true
+        }
+
+        // 完了チェックボックス
+        val chk = CheckBox(context)
         chk.layoutParams = layoutParams
-        chk.setPadding(0, 0, 15, 0)
         chk.isChecked = done
-        chk.text = "($id)$contents"
+        // 長押しでタスク選択
         chk.setOnLongClickListener(){
             selectAt(this.id, !selected)
             true
         }
 
-        subtaskLinearLayout.addView(chk)
+        // タスクの内容TextView
+        val contentsText = TextView(context)
+        contentsText.text = "($id)$contents"
+        // 長押しでタスク選択
+        contentsText.setOnLongClickListener(){
+            selectAt(this.id, !selected)
+            true
+        }
+
+        // 確定ボタン
+        val confirmBtn = Button(context)
+        confirmBtn.text = "↩︎"
+        confirmBtn.isVisible = false
+
+        // タスク編集時のEditText
+        val editText = EditText(context)
+        editText.setText(contentsText.text)
+        editText.isVisible = false
+
+        // タスク内容テキスト編集時の挙動
+        contentsText.setOnClickListener(){
+            contentsText.isVisible = false
+            editText.isVisible = true
+            confirmBtn.isVisible = true
+        }
+        confirmBtn.setOnClickListener(){
+            contentsText.text = editText.text
+            contentsText.isVisible = true
+            editText.isVisible = false
+            confirmBtn.isVisible = false
+        }
+
+
+        // 各Viewをアタッチ
+        rowLinearLayout.addView(chk)
+        rowLinearLayout.addView(contentsText)
+        rowLinearLayout.addView(editText)
+        rowLinearLayout.addView(confirmBtn)
+        subtaskLinearLayout.addView(rowLinearLayout)
         parentView.addView(subtaskLinearLayout)
 
+        // サブタスクのinitUIを実行
         for(task in subTasks){
             task.initUI(context, subtaskLinearLayout)
         }
