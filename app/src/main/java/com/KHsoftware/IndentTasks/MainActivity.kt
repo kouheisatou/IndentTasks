@@ -43,7 +43,10 @@ class MainActivity : AppCompatActivity() {
 
         Log.d("exportText", MasterTask.export())
 
-        MasterTask.selectAt(5)
+        MasterTask.selectAt(5, true)
+        MasterTask.unselectAll()
+        Log.d("findTaskById", MasterTask.findTaskById(5)?.contents.toString())
+
 
 
 

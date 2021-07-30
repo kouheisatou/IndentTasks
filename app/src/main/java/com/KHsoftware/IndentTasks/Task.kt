@@ -19,8 +19,8 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
 
     /** このタスクの選択状態 **/
     var selected = false
-    /** 1つ上の階層のタスクの選択状態 **/
-    var parentSelected = false
+//    /** 1つ上の階層のタスクの選択状態 **/
+//    var parentSelected = false
     /** このタスクを親とする階層全体の線形レイアウトView **/
     lateinit var subtaskLinearLayout: LinearLayout
     /** このタスクのチェックボックスView **/
@@ -30,12 +30,69 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
 
     open fun generateId() = ++MasterTask.taskNum
 
-    fun selectAt(id: Int){
+    /**
+     * 指定したIDのタスクとそのサブタスクを選択する
+     * @param id 選択するタスクのID
+     * @param select true:選択, false:選択解除
+     */
+    fun selectAt(id: Int, select: Boolean){
         if(id == this.id){
-            selectThis()
+
+            // 選択状態をリセット
+            MasterTask.unselectAll()
+
+            // マスタータスクに選択されたタスクを保持、選択が解除された場合はnullを代入
+            MasterTask.selectedTask = if(select){this}else{null}
+            this.selected = select
+            Log.d("selected", MasterTask.selectedTask?.id.toString())
+
+            // 選択されたタスクに色を付ける
+            val color = if(select){ "#DDDDDD" }else{ "#FFFFFF" }
+            this.subtaskLinearLayout.setBackgroundColor(Color.parseColor(color))
+
+            // 選択されたタスクのサブタスクを全て選択する
+            for(task in subTasks){
+                task.makeAllSubtaskSelected(select)
+                // サブタスクが選択された時に色を付ける
+                task.subtaskLinearLayout.setBackgroundColor(Color.parseColor(color))
+            }
+
+        }else{
+            // このタスクのIDが指定したIDと一致しない場合、サブタスクのIDも検索する
+            for(i in subTasks){
+                i.selectAt(id, select)
+            }
         }
-        for(i in subTasks){
-            i.selectAt(id)
+    }
+
+    fun unselectAll(){
+        val color = Color.parseColor("#FFFFFF")
+        MasterTask.selectedTask?.subtaskLinearLayout?.setBackgroundColor(color)
+
+        for(task in subTasks){
+            task.subtaskLinearLayout.setBackgroundColor(color)
+            task.selected = false
+            task.unselectAll()
+        }
+
+        this.selected = false
+        MasterTask.selectedTask = null
+
+        Log.d("selected", MasterTask.selectedTask?.id.toString())
+
+    }
+
+    /**
+     * このタスクが持つサブタスク全てを選択または選択解除する
+     * @param select true:選択, false:選択解除
+     */
+    fun makeAllSubtaskSelected(select: Boolean){
+
+        // このタスクが持つサブタスクを全て選択済みにする
+        for(task in subTasks){
+            task.subtaskLinearLayout.setBackgroundColor(Color.parseColor(if(select){ "#DDDDDD" }else{ "#FFFFFF" }))
+            // サブタスクの持つサブサブタスクを全て選択状態/選択解除状態にする
+            task.makeAllSubtaskSelected(select)
         }
     }
 
@@ -65,26 +122,39 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         }
     }
 
-    fun selectThis(){
-        selected = true
-        subtaskLinearLayout.setBackgroundColor(Color.parseColor("#DDDDDD"))
-        MasterTask.selectedTask = this
-        for(i in subTasks){
-            i.parentSelected = true
-            i.selectThis()
-            i.subtaskLinearLayout.setBackgroundColor(Color.parseColor("#DDDDDD"))
-        }
-    }
-    fun unselectThis(){
-        selected = false
-        subtaskLinearLayout.setBackgroundColor(Color.parseColor("#FFFFFF"))
-        MasterTask.selectedTask = null
-        for(i in subTasks){
-            i.parentSelected = false
-            i.unselectThis()
-            i.subtaskLinearLayout.setBackgroundColor(Color.parseColor("#FFFFFF"))
-        }
-    }
+    /**
+     * このタスクを選択するか、選択を解除するか
+     * @param select true:選択, false:選択解除
+     */
+//    fun selectThis(select: Boolean, parentSelected: Boolean){
+//
+//        // 以前に選択していたタスクの選択解除
+//        MasterTask.unselectAll()
+//        if(select){
+//            // 新規に選択したタスクを選択中としてマスタータスクで保持
+//            MasterTask.selectedTask = this
+//            this.selected = select
+//        }
+//        else{
+//            // このタスクは選択されていないが、このタスクより上の階層のタスクで選択されている場合は、MasterTask.selectedTaskを変更しない
+//            if(!parentSelected){
+//                MasterTask.selectedTask = null
+//            }
+//        }
+//
+//        Log.d("selected", MasterTask.selectedTask?.id.toString())
+//
+//        // 選択されたタスクに色を付ける
+//        val color = if(select || parentSelected){ "#DDDDDD" }else{ "#FFFFFF" }
+//        subtaskLinearLayout.setBackgroundColor(Color.parseColor(color))
+//
+//        // サブタスクを選択状態を更新
+//        for(i in subTasks){
+//            i.selected = select
+//            i.selectThis(select = false, parentSelected = true)
+//            i.subtaskLinearLayout.setBackgroundColor(Color.parseColor(color))
+//        }
+//    }
 
     /**
      * 自動的に適切な階層の一番最後へタスクを追加する
@@ -156,13 +226,7 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         chk.isChecked = done
         chk.text = "($id)$contents"
         chk.setOnLongClickListener(){
-            if(!parentSelected){
-                if(selected){
-                    unselectThis()
-                }else{
-                    selectThis()
-                }
-            }
+            selectAt(this.id, !selected)
             true
         }
 
