@@ -110,14 +110,15 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         }
     }
 
-    fun deleteSubtaskAt(index: Int){
-        subTasks.removeAt(index)
-    }
-
-    fun deleteSubtaskSelected(){
-        for(i in subTasks.withIndex()){
-            if(i.value.selected){
-                subTasks.removeAt(i.index)
+    fun deleteSubtaskById(id: Int, context: Context){
+        for(task in subTasks){
+            if(id == task.id){
+                subTasks.remove(task)
+                this.subtaskLinearLayout.removeView(task.subtaskLinearLayout)
+                return
+            }else{
+                // idが一致しない場合、さらに下の階層もidで検索
+                task.deleteSubtaskById(id, context)
             }
         }
     }

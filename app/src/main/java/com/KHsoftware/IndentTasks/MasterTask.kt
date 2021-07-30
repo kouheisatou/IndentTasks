@@ -24,5 +24,9 @@ object MasterTask: Task(false, "", mutableListOf(), 0){
         selectedTask.addSubtask(context, contents)
     }
 
+    fun removeSelectedTask(context: Context){
+        val selectedTask = selectedTask ?: return
+        deleteSubtaskById(selectedTask.id, context)
+    }
 
 }

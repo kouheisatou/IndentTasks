@@ -44,10 +44,15 @@ class MainActivity : AppCompatActivity() {
         // 全タスク初期化
         MasterTask.initUI(this, taskContainer)
 
-        // タスク追加
+        // タスク追加ボタン
         addButton.setOnClickListener(){
             MasterTask.addTaskToSelected(this, editText.text.toString())
             editText.setText("")
+        }
+
+        // タスク削除ボタン
+        deleteBtn.setOnClickListener(){
+            MasterTask.removeSelectedTask(this)
         }
 
         Log.d("exportText", MasterTask.export())
