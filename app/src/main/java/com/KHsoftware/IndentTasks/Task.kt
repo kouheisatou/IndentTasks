@@ -95,6 +95,14 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         }
     }
 
+    fun setFoldButton(){
+        // サブタスクが0の時以外折り畳みボタン表示
+        foldButton.alpha = if(subTasks.size == 0) { 0f } else { 1f }
+        for(task in subTasks){
+            task.setFoldButton()
+        }
+    }
+
     fun checkAllSubtaskDone(): Boolean{
         var done = true
         for(i in subTasks){
@@ -124,8 +132,6 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
                 task.deleteSubtaskById(id, context)
             }
         }
-        // サブタスクが0の時以外折り畳みボタン表示
-        foldButton.alpha = if(subTasks.size == 0) { 0f } else { 1f }
     }
 
     /**
@@ -149,8 +155,6 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         val newTask = Task(done = false, contents = contents, depth = this.depth+1)
         this.subTasks += newTask
         newTask.initUI(context, this.subtaskLinearLayout)
-        // サブタスクが0の時以外折り畳みボタン表示
-        foldButton.alpha = if(subTasks.size == 0) { 0f } else { 1f }
     }
 
 

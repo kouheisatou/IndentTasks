@@ -5,7 +5,7 @@
 			[ ]SubSubTask1
 		[ ]SubTask3
 			[ ]SubSubTask2
-	[x]SubTask2
+	^[x]SubTask2
 		[x]SubTask1
 	[x]Task3
 	[ ]Task4

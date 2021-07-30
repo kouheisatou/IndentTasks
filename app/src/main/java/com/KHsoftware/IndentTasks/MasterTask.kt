@@ -23,6 +23,7 @@ object MasterTask: Task(false, "", mutableListOf(), 0){
     fun addTaskToSelected(context: Context, contents: String){
         val selectedTask = selectedTask ?: MasterTask
         selectedTask.addSubtask(context, contents)
+        setFoldButton()
     }
 
     fun removeSelectedTask(context: Context){
@@ -35,6 +36,7 @@ object MasterTask: Task(false, "", mutableListOf(), 0){
         }else{
             deleteSubtaskById(selectedTask.id, context)
         }
+        setFoldButton()
     }
 
 }
