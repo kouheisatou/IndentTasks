@@ -2,6 +2,7 @@ package com.KHsoftware.IndentTasks
 
 import android.annotation.SuppressLint
 import android.content.Context
+import androidx.core.view.children
 
 @SuppressLint("StaticFieldLeak")
 object MasterTask: Task(false, "", mutableListOf(), 0){
@@ -25,8 +26,15 @@ object MasterTask: Task(false, "", mutableListOf(), 0){
     }
 
     fun removeSelectedTask(context: Context){
-        val selectedTask = selectedTask ?: return
-        deleteSubtaskById(selectedTask.id, context)
+        val selectedTask = this.selectedTask ?: return
+        if(selectedTask.id == 0){
+            subTasks.clear()
+            subtaskLinearLayout.removeAllViews()
+            initUI(context, subtaskLinearLayout)
+            unselectAll()
+        }else{
+            deleteSubtaskById(selectedTask.id, context)
+        }
     }
 
 }
