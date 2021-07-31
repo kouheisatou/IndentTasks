@@ -57,17 +57,18 @@ open class Task(
                 // 以前選択されたタスクのドラッグを無効化
                 if(MasterTask.selectedTask != null){
                     val selectedTask = MasterTask.selectedTask!!
-                    val parent = selectedTask.parent
                     selectedTask.subtaskLinearLayout.removeAllViews()
-                    // ここで親タスクとして一つ上の階層を指定しなければならなかった（修正済み
-                    selectedTask.initUI(context, parent?.subtaskLinearLayout, taskContainer)
+                    // View上で元あった場所
+                    val index = selectedTask.parent?.subtaskLinearLayout?.indexOfChild(selectedTask.subtaskLinearLayout)
+                    selectedTask.initUI(context, selectedTask.parent?.subtaskLinearLayout, taskContainer, index)
                 }
                 // このタスクのサブタスクのドラッグを有効化
                 setSubtaskDraggable(true, context)
             }else{
                 // ドラッグを無効化
                 subtaskLinearLayout.removeAllViews()
-                initUI(context, parent?.subtaskLinearLayout, taskContainer)
+                val index = parent?.subtaskLinearLayout?.indexOfChild(subtaskLinearLayout)
+                initUI(context, parent?.subtaskLinearLayout, taskContainer, index)
             }
 
             // 選択状態をリセット
@@ -259,7 +260,8 @@ open class Task(
             }
         }else{
             subtaskLinearLayout.removeAllViews()
-            initUI(context, parent?.subtaskLinearLayout, taskContainer)
+            val index = parent?.subtaskLinearLayout?.indexOfChild(subtaskLinearLayout)
+            initUI(context, parent?.subtaskLinearLayout, taskContainer, index)
             for(task in subTasks){
                 task.setSubtaskDraggable(false, context)
             }
@@ -270,9 +272,11 @@ open class Task(
      * このタスクの情報からAndroidの画面上のレイアウトを生成
      * タスクのインスタンスを生成したら実行しUIを初期化する
      * @param parentView 追加先のLinearLayout
+     * @param taskContainer 大元の親レイアウト
+     * @param insert サブタスクのレイアウトをparentViewに追加する際、追加先のどこに追加するかを指定
      */
     @SuppressLint("SetTextI18n")
-    open fun initUI(context: Context, parentView: DragLinearLayout?, taskContainer: DragLinearLayout){
+    open fun initUI(context: Context, parentView: DragLinearLayout?, taskContainer: DragLinearLayout, insert: Int? = null){
         this.context = context
         this.taskContainer = taskContainer
 
@@ -366,10 +370,18 @@ open class Task(
         rowLinearLayout.addView(editText)
         rowLinearLayout.addView(confirmBtn)
         subtaskLinearLayout.addView(rowLinearLayout)
-        if(parentView == null){
-            taskContainer.addView(subtaskLinearLayout)
+        if(insert == null){
+            if(parentView == null){
+                taskContainer.addView(subtaskLinearLayout)
+            }else{
+                parentView.addView(subtaskLinearLayout)
+            }
         }else{
-            parentView.addView(subtaskLinearLayout)
+            if(parentView == null){
+                taskContainer.addView(subtaskLinearLayout, insert)
+            }else{
+                parentView.addView(subtaskLinearLayout, insert)
+            }
         }
 
         // サブタスクのinitUIを実行
