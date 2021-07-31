@@ -1,7 +1,8 @@
-D&Dで同一階層内のタスクスワップ
-    DragLinearLayout
-折り畳み行
+[x]D&Dで同一階層内のタスクスワップ
+    [x]DragLinearLayout
+[x]折り畳み行
 Undo, Redo機能
+折り畳みを保持する
 
 
 

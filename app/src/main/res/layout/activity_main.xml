@@ -42,7 +42,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
             <Button
-                android:id="@+id/RedoBtn"
+                android:id="@+id/redoBtn"
                 android:layout_marginHorizontal="5dp"
                 android:text="→"
                 android:layout_width="wrap_content"
@@ -55,7 +55,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp">
 
-            <LinearLayout
+            <com.jmedeisis.draglinearlayout.DragLinearLayout
                 android:id="@+id/taskContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -63,7 +63,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent"/>
         </ScrollView>
 
 

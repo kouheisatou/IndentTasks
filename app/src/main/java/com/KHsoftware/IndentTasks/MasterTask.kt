@@ -20,6 +20,9 @@ object MasterTask: Task(false, "", mutableListOf(), 0){
         return result
     }
 
+    /**
+     * 選択されたタスクのサブタスクとして新規タスクを追加する
+     */
     fun addTaskToSelected(context: Context, contents: String){
         val selectedTask = selectedTask ?: MasterTask
         selectedTask.addSubtask(context, contents)

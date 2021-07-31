@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.core.view.isVisible
 import androidx.core.view.marginLeft
+import com.jmedeisis.draglinearlayout.DragLinearLayout
 import kotlinx.android.synthetic.main.activity_main.view.*
 
 // できるだけ画面描画は描画するだけ、内部処理の結果を出すだけにする -> redraw()
@@ -20,12 +21,18 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
 
     /** このタスクの選択状態 **/
     var selected = false
-    /** このタスクを親とする階層全体の線形レイアウトView **/
-    lateinit var subtaskLinearLayout: LinearLayout
-    /** 折り畳み/展開ボタン **/
-    lateinit var foldButton: ImageView
     /** タスクのID **/
     var id = generateId()
+
+    /** このタスクを親とする階層全体の線形レイアウトView **/
+    lateinit var subtaskLinearLayout: DragLinearLayout
+    /** 折り畳み/展開ボタン **/
+    lateinit var foldButton: ImageView
+    /** タスクの内容TextView **/
+    lateinit var contentsText: TextView
+    /** 完了チェックボックス **/
+    lateinit var chk: CheckBox
+    lateinit var context: Context
 
     open fun generateId() = ++MasterTask.taskNum
 
@@ -35,12 +42,15 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
      * @param select true:選択, false:選択解除
      */
     fun selectAt(id: Int, select: Boolean){
+
+        // このIDのタスクが選択された時
         if(id == this.id){
+            selected = select
 
             // 選択状態をリセット
             MasterTask.unselectAll()
 
-            // マスタータスクに選択されたタスクを保持、選択が解除された場合はnullを代入
+            // 選択された場合はマスタータスクに選択されたタスクを保持、選択が解除された場合はnullを代入
             MasterTask.selectedTask = if(select){this}else{null}
             this.selected = select
             Log.d("selected", MasterTask.selectedTask?.id.toString())
@@ -56,6 +66,11 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
                 task.subtaskLinearLayout.setBackgroundColor(Color.parseColor(color))
             }
 
+            // 選択されたタスクのサブタスクのドラッグを有効にする
+            if(select){
+                setSubtaskDraggable(true, context)
+            }
+
         }else{
             // このタスクのIDが指定したIDと一致しない場合、サブタスクのIDも検索する
             for(i in subTasks){
@@ -65,9 +80,12 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
     }
 
     fun unselectAll(){
+
+        // 選択色を解除
         val color = Color.parseColor("#FFFFFF")
         MasterTask.selectedTask?.subtaskLinearLayout?.setBackgroundColor(color)
 
+        // 全てのサブタスクで実行
         for(task in subTasks){
             task.subtaskLinearLayout.setBackgroundColor(color)
             task.selected = false
@@ -95,8 +113,11 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         }
     }
 
+    /**
+     * サブタスクが0のときに折り畳みボタンを非表示にする
+     * タスクが追加された時に必ずMasterTaskから全てのタスクに対して実行
+     */
     fun setFoldButton(){
-        // サブタスクが0の時以外折り畳みボタン表示
         foldButton.alpha = if(subTasks.size == 0) { 0f } else { 1f }
         for(task in subTasks){
             task.setFoldButton()
@@ -117,6 +138,7 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         }
     }
 
+    // 引数のIDのタスクを削除する
     fun deleteSubtaskById(id: Int, context: Context){
         for(task in subTasks){
             if(id == task.id){
@@ -155,9 +177,14 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         val newTask = Task(done = false, contents = contents, depth = this.depth+1)
         this.subTasks += newTask
         newTask.initUI(context, this.subtaskLinearLayout)
+        // 選択されている場合は追加するサブタスクにも選択色を付ける
+        if(selected){
+            newTask.subtaskLinearLayout.setBackgroundColor(Color.parseColor("#DDDDDD"))
+            setSubtaskDraggable(true, context)
+        }
     }
 
-
+    // 引数のIDのタスクを返す
     open fun findTaskById(id: Int): Task?{
         var result: Task? = null
         for(task in subTasks){
@@ -191,29 +218,55 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
     }
 
     /**
+     * サブタスクのドラッグの有効化/無効化を切り替える
+     * 必ずサブタスクのinitUI()の後に実行
+     * @param draggable true:ドラッグを有効化, false:ドラッグ無効化
+     */
+    fun setSubtaskDraggable(draggable: Boolean, context: Context){
+        if(draggable){
+            for(task in subTasks){
+                val dragView = task.subtaskLinearLayout
+                val handle = task.subtaskLinearLayout
+                subtaskLinearLayout.setViewDraggable(dragView, handle)
+                // ドラッグによるviewの入れ替えに伴い、サブタスク配列の順序も入れ替える
+                subtaskLinearLayout.setOnViewSwapListener { firstView, firstPosition, secondView, secondPosition ->
+                    Log.d("swap", "$firstPosition <-> $secondPosition")
+                    val temp = subTasks[firstPosition - 1]
+                    subTasks[firstPosition - 1] = subTasks[secondPosition - 1]
+                    subTasks[secondPosition - 1] = temp
+                }
+            }
+        }else{
+            subtaskLinearLayout.removeAllViews()
+            initUI(context, subtaskLinearLayout)
+            for(task in subTasks){
+                task.setSubtaskDraggable(false, context)
+            }
+        }
+    }
+
+    /**
      * このタスクの情報からAndroidの画面上のレイアウトを生成
-     * タスクのインスタンスを生成したら実行し初期化する
+     * タスクのインスタンスを生成したら実行しUIを初期化する
      * @param parentView 追加先のLinearLayout
      */
     @SuppressLint("SetTextI18n")
-    open fun initUI(context: Context, parentView: LinearLayout){
+    open fun initUI(context: Context, parentView: DragLinearLayout){
+        this.context = context
+
         // タスク全体のLinearLayout
-        subtaskLinearLayout = LinearLayout(context)
+        subtaskLinearLayout = DragLinearLayout(context)
         subtaskLinearLayout.orientation = LinearLayout.VERTICAL
         var layoutParams = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
         )
         subtaskLinearLayout.layoutParams = layoutParams
+        subtaskLinearLayout.setBackgroundColor(Color.parseColor("#FFFFFF"))
 
         // 各タスクの横向き行LinearLayout
         val rowLinearLayout = LinearLayout(context)
         rowLinearLayout.orientation = LinearLayout.HORIZONTAL
         rowLinearLayout.layoutParams = layoutParams
-        // 長押しでタスク選択
-        rowLinearLayout.setOnLongClickListener(){
-            selectAt(this.id, !selected)
-            true
-        }
 
         // 余白用View
         for(i in 0 until depth){
@@ -225,7 +278,7 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         }
 
         // 完了チェックボックス
-        val chk = CheckBox(context)
+        chk = CheckBox(context)
         chk.isChecked = done
         // 長押しでタスク選択
         chk.setOnLongClickListener(){
@@ -234,9 +287,8 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         }
 
         // タスクの内容TextView
-        val contentsText = TextView(context)
+        contentsText = TextView(context)
         contentsText.text = "($id)$contents"
-//        contentsText.setPadding(0, 0, 100, 0)
         // 長押しでタスク選択
         contentsText.setOnLongClickListener(){
             selectAt(this.id, !selected)
@@ -282,7 +334,6 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
             editText.isVisible = false
             confirmBtn.isVisible = false
         }
-
 
         // 各Viewをアタッチ
         rowLinearLayout.addView(foldButton)
