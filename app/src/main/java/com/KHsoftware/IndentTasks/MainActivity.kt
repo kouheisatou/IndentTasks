@@ -13,30 +13,30 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val sample = "[ ]Title\n" +
-                "\t[ ]Task1\n" +
-                "\t\t[ ]SubTask1\n" +
-                "\t\t[ ]SubTask2\n" +
-                "\t\t\t[ ]SubSubTask1\n" +
-                "\t\t[ ]SubTask3\n" +
-                "\t\t\t[ ]SubSubTask2\n" +
-                "\t[x]Task2\n" +
-                "\t\t[x]SubTask1\n" +
-                "\t[x]Task3\n" +
-                "\t[ ]Task4\n" +
-                "\t\t[x]SubTask1\n" +
-                "\t\t[ ]SubTask2\n" +
-                "\t\t\t[ ]SubSubTask1\n" +
-                "\t\t\t\t[ ]SubSubSubTask1\n" +
-                "\t\t\t\t\t[ ]Sub4Task1\n" +
-                "\t\t\t\t\t[ ]Sub4Task2\n" +
-                "\t\t\t\t\t\t[ ]Sub5Task1\n" +
-                "\t\t\t\t\t\t\t[ ]Sub6Task1\n" +
-                "\t\t\t\t\t\t\t\t[x]Sub7Task1\n" +
-                "\t\t\t\t\t\t\t\t[x]Sub7Task2\n" +
-                "\t\t\t\t\t[ ]Sub4Task3\n" +
-                "\t\t\t\t\t[ ]Sub4Task4\n" +
-                "\t\t\t\t\t\t[x]Sub5Task2"
+        val sample = "+[ ]Title\n" +
+                "\t-[ ]Task1\n" +
+                "\t\t+[ ]SubTask1\n" +
+                "\t\t+[ ]SubTask2\n" +
+                "\t\t\t+[ ]SubSubTask1\n" +
+                "\t\t+[ ]SubTask3\n" +
+                "\t\t\t+[ ]SubSubTask2\n" +
+                "\t+[x]SubTask2\n" +
+                "\t\t+[x]SubTask1\n" +
+                "\t+[x]Task3\n" +
+                "\t+[ ]Task4\n" +
+                "\t\t+[x]SubTask1\n" +
+                "\t\t+[ ]SubTask2\n" +
+                "\t\t\t+[ ]SubSubTask1\n" +
+                "\t\t\t\t+[ ]SubSubSubTask1\n" +
+                "\t\t\t\t\t+[ ]Sub4Task1\n" +
+                "\t\t\t\t\t+[ ]Sub4Task2\n" +
+                "\t\t\t\t\t\t-[ ]Sub5Task1\n" +
+                "\t\t\t\t\t\t\t-[ ]Sub6Task1\n" +
+                "\t\t\t\t\t\t\t\t+[x]Sub7Task1\n" +
+                "\t\t\t\t\t\t\t\t+[x]Sub7Task2\n" +
+                "\t\t\t\t\t+[ ]Sub4Task3\n" +
+                "\t\t\t\t\t-[ ]Sub4Task4\n" +
+                "\t\t\t\t\t\t+[x]Sub5Task2"
 
 
         // テキストからタスクを生成
@@ -58,6 +58,14 @@ class MainActivity : AppCompatActivity() {
 
         undoBtn.setOnClickListener(){
             Log.d("exportText", MasterTask.export())
+        }
+
+        expandBtn.setOnClickListener(){
+            MasterTask.foldAllTask(false)
+        }
+
+        foldBtn.setOnClickListener(){
+            MasterTask.foldAllTask(true)
         }
 
 

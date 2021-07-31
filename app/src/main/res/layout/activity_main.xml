@@ -31,22 +31,29 @@
 
             <Button
                 android:id="@+id/deleteBtn"
-                android:layout_marginHorizontal="10dp"
                 android:text="削除"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
             <Button
                 android:id="@+id/undoBtn"
-                android:layout_marginHorizontal="5dp"
                 android:text="←"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
             <Button
                 android:id="@+id/redoBtn"
-                android:layout_marginHorizontal="5dp"
                 android:text="→"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
+            <Button
+                android:id="@+id/expandBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="全て展開"/>
+            <Button
+                android:id="@+id/foldBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="全て畳む"/>
         </LinearLayout>
 
         <ScrollView

@@ -20,6 +20,12 @@ object MasterTask: Task(false, "", mutableListOf(), 0, null, false){
         return result
     }
 
+    fun foldAllTask(fold: Boolean){
+        for(subtask in subTasks){
+            subtask.foldSubtasks(fold, true)
+        }
+    }
+
     /**
      * 選択されたタスクのサブタスクとして新規タスクを追加する
      */

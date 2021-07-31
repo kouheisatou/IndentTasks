@@ -140,7 +140,12 @@ open class Task(
      * タスクが追加された時に必ずMasterTaskから全てのタスクに対して実行
      */
     fun setFoldButton(){
-        foldButton.alpha = if(subTasks.size == 0) { 0f } else { 1f }
+        if(subTasks.size == 0){
+            foldButton.alpha = 0f
+            fold = false
+        }else{
+            foldButton.alpha = 1f
+        }
         for(task in subTasks){
             task.setFoldButton()
         }
@@ -184,13 +189,13 @@ open class Task(
      * @param contents タスクの内容
      * @param depth 追加するタスクの階層
      */
-    fun addSubtask(done: Boolean, contents: String, depth: Int){
+    fun addSubtask(done: Boolean, contents: String, depth: Int, fold: Boolean){
         // 追加されるタスクの階層が(このタスクの階層+1)ならば、このタスクの直下にタスクを追加
         // それより深い階層ならば、このタスク配列の直下のタスクのaddSubTaskメソッドを呼び出し
         if(depth == this.depth + 1){
-            subTasks.add(Task(done, contents, mutableListOf<Task>(), this.depth + 1, this, false))
+            subTasks.add(Task(done, contents, mutableListOf<Task>(), this.depth + 1, this, fold))
         }else{
-            subTasks.last().addSubtask(done, contents, depth)
+            subTasks.last().addSubtask(done, contents, depth, fold)
         }
     }
 
@@ -206,10 +211,13 @@ open class Task(
         }
     }
 
-    fun foldSubtasks(fold: Boolean){
+    fun foldSubtasks(fold: Boolean, applyToSubtasks: Boolean){
         foldButton.rotation = if(fold) { 180F } else { 0F }
         for(task in subTasks){
             task.subtaskLinearLayout.isVisible = !fold
+            if(applyToSubtasks){
+                task.foldSubtasks(fold, applyToSubtasks)
+            }
         }
     }
 
@@ -238,7 +246,9 @@ open class Task(
         }
 
         var text = ""
-        text += "$tab$depth[${this.done}] ${this.contents}\n"
+        val doneSign = if(done){ "x" }else{ " " }
+        val foldSign = if(fold){ "-" }else{ "+" }
+        text += "$tab$foldSign[$doneSign] ${this.contents}\n"
         for(i in subTasks){
             text += tab
             text += "\t"
@@ -351,7 +361,7 @@ open class Task(
         foldButton.layoutParams = buttonParams
         foldButton.setOnClickListener(){
             fold = !fold
-            foldSubtasks(fold)
+            foldSubtasks(fold, false)
         }
         // サブタスクが0の時以外折り畳みボタン表示
         foldButton.alpha = if(subTasks.size == 0) { 0f } else { 1f }
@@ -394,8 +404,8 @@ open class Task(
         for(task in subTasks){
             task.initUI(context, subtaskLinearLayout, taskContainer)
         }
-        
-        foldSubtasks(fold)
+
+        foldSubtasks(fold, false)
 
     }
 }
