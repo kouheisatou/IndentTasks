@@ -1,5 +1,6 @@
 package com.KHsoftware.IndentTasks
 
+import android.animation.LayoutTransition
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
@@ -12,26 +13,31 @@ import androidx.core.view.isVisible
 import androidx.core.view.marginLeft
 import com.jmedeisis.draglinearlayout.DragLinearLayout
 import kotlinx.android.synthetic.main.activity_main.view.*
+import java.lang.Exception
 
 // できるだけ画面描画は描画するだけ、内部処理の結果を出すだけにする -> redraw()
 // todo Taskを継承してmasterTaskを作成、これは一つしか存在しないsingleton
 // todo dragLinearLayoutで選択中のタスクを同じ階層内でドラッグできるように
 
-open class Task(var done: Boolean, var contents: String, val subTasks: MutableList<Task> = mutableListOf(), val depth: Int){
+open class Task(
+    var done: Boolean,
+    var contents: String,
+    val subTasks: MutableList<Task> = mutableListOf(),
+    val depth: Int,
+    val parent: Task?
+    ){
 
     /** このタスクの選択状態 **/
     var selected = false
     /** タスクのID **/
     var id = generateId()
 
+    /** 大元の親レイアウト **/
+    lateinit var taskContainer: DragLinearLayout
     /** このタスクを親とする階層全体の線形レイアウトView **/
     lateinit var subtaskLinearLayout: DragLinearLayout
     /** 折り畳み/展開ボタン **/
     lateinit var foldButton: ImageView
-    /** タスクの内容TextView **/
-    lateinit var contentsText: TextView
-    /** 完了チェックボックス **/
-    lateinit var chk: CheckBox
     lateinit var context: Context
 
     open fun generateId() = ++MasterTask.taskNum
@@ -43,17 +49,33 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
      */
     fun selectAt(id: Int, select: Boolean){
 
-        // このIDのタスクが選択された時
+        // このタスクが選択された時
         if(id == this.id){
-            selected = select
+
+            // 選択されたタスクのサブタスクのドラッグを有効/無効を切り替える
+            if(select){
+                // 以前選択されたタスクのドラッグを無効化
+                if(MasterTask.selectedTask != null){
+                    val selectedTask = MasterTask.selectedTask!!
+                    val parent = selectedTask.parent
+                    selectedTask.subtaskLinearLayout.removeAllViews()
+                    // ここで親タスクとして一つ上の階層を指定しなければならなかった（修正済み
+                    selectedTask.initUI(context, parent?.subtaskLinearLayout, taskContainer)
+                }
+                // このタスクのサブタスクのドラッグを有効化
+                setSubtaskDraggable(true, context)
+            }else{
+                // ドラッグを無効化
+                subtaskLinearLayout.removeAllViews()
+                initUI(context, parent?.subtaskLinearLayout, taskContainer)
+            }
 
             // 選択状態をリセット
-            MasterTask.unselectAll()
+            MasterTask.unselectAllSubtasks()
 
             // 選択された場合はマスタータスクに選択されたタスクを保持、選択が解除された場合はnullを代入
             MasterTask.selectedTask = if(select){this}else{null}
             this.selected = select
-            Log.d("selected", MasterTask.selectedTask?.id.toString())
 
             // 選択されたタスクに色を付ける
             val color = if(select){ "#DDDDDD" }else{ "#FFFFFF" }
@@ -66,20 +88,18 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
                 task.subtaskLinearLayout.setBackgroundColor(Color.parseColor(color))
             }
 
-            // 選択されたタスクのサブタスクのドラッグを有効にする
-            if(select){
-                setSubtaskDraggable(true, context)
-            }
-
         }else{
             // このタスクのIDが指定したIDと一致しない場合、サブタスクのIDも検索する
             for(i in subTasks){
                 i.selectAt(id, select)
             }
+            return
         }
+
+        Log.d("selected", MasterTask.selectedTask?.id.toString() + ", " + MasterTask.selectedTask?.selected.toString())
     }
 
-    fun unselectAll(){
+    fun unselectAllSubtasks(){
 
         // 選択色を解除
         val color = Color.parseColor("#FFFFFF")
@@ -89,7 +109,7 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         for(task in subTasks){
             task.subtaskLinearLayout.setBackgroundColor(color)
             task.selected = false
-            task.unselectAll()
+            task.unselectAllSubtasks()
         }
 
         this.selected = false
@@ -166,7 +186,7 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         // 追加されるタスクの階層が(このタスクの階層+1)ならば、このタスクの直下にタスクを追加
         // それより深い階層ならば、このタスク配列の直下のタスクのaddSubTaskメソッドを呼び出し
         if(depth == this.depth + 1){
-            subTasks.add(Task(done, contents, mutableListOf<Task>(), this.depth + 1))
+            subTasks.add(Task(done, contents, mutableListOf<Task>(), this.depth + 1, this))
         }else{
             subTasks.last().addSubtask(done, contents, depth)
         }
@@ -174,9 +194,9 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
 
     // このタスクの一番最後のサブタスクとして新規タスクを追加
     fun addSubtask(context: Context, contents: String){
-        val newTask = Task(done = false, contents = contents, depth = this.depth+1)
+        val newTask = Task(done = false, contents = contents, depth = this.depth+1, parent = this)
         this.subTasks += newTask
-        newTask.initUI(context, this.subtaskLinearLayout)
+        newTask.initUI(context, this.subtaskLinearLayout, taskContainer)
         // 選択されている場合は追加するサブタスクにも選択色を付ける
         if(selected){
             newTask.subtaskLinearLayout.setBackgroundColor(Color.parseColor("#DDDDDD"))
@@ -190,6 +210,7 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         for(task in subTasks){
             if(id == task.id){
                 result = task
+                return result
             }else{
                 result = task.findTaskById(id)
                 if(result != null) return result
@@ -238,7 +259,7 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
             }
         }else{
             subtaskLinearLayout.removeAllViews()
-            initUI(context, subtaskLinearLayout)
+            initUI(context, parent?.subtaskLinearLayout, taskContainer)
             for(task in subTasks){
                 task.setSubtaskDraggable(false, context)
             }
@@ -251,8 +272,9 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
      * @param parentView 追加先のLinearLayout
      */
     @SuppressLint("SetTextI18n")
-    open fun initUI(context: Context, parentView: DragLinearLayout){
+    open fun initUI(context: Context, parentView: DragLinearLayout?, taskContainer: DragLinearLayout){
         this.context = context
+        this.taskContainer = taskContainer
 
         // タスク全体のLinearLayout
         subtaskLinearLayout = DragLinearLayout(context)
@@ -267,6 +289,8 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         val rowLinearLayout = LinearLayout(context)
         rowLinearLayout.orientation = LinearLayout.HORIZONTAL
         rowLinearLayout.layoutParams = layoutParams
+        rowLinearLayout.layoutTransition = LayoutTransition()
+        rowLinearLayout.layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
 
         // 余白用View
         for(i in 0 until depth){
@@ -278,7 +302,7 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         }
 
         // 完了チェックボックス
-        chk = CheckBox(context)
+        val chk = CheckBox(context)
         chk.isChecked = done
         // 長押しでタスク選択
         chk.setOnLongClickListener(){
@@ -287,7 +311,7 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         }
 
         // タスクの内容TextView
-        contentsText = TextView(context)
+        val contentsText = TextView(context)
         contentsText.text = "($id)$contents"
         // 長押しでタスク選択
         contentsText.setOnLongClickListener(){
@@ -342,11 +366,15 @@ open class Task(var done: Boolean, var contents: String, val subTasks: MutableLi
         rowLinearLayout.addView(editText)
         rowLinearLayout.addView(confirmBtn)
         subtaskLinearLayout.addView(rowLinearLayout)
-        parentView.addView(subtaskLinearLayout)
+        if(parentView == null){
+            taskContainer.addView(subtaskLinearLayout)
+        }else{
+            parentView.addView(subtaskLinearLayout)
+        }
 
         // サブタスクのinitUIを実行
         for(task in subTasks){
-            task.initUI(context, subtaskLinearLayout)
+            task.initUI(context, subtaskLinearLayout, taskContainer)
         }
     }
 }

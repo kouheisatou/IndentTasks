@@ -8,8 +8,6 @@ import android.widget.TextView
 import com.jmedeisis.draglinearlayout.DragLinearLayout
 import kotlinx.android.synthetic.main.activity_main.*
 
-// todo 折り畳み,スワイプで
-
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,7 +20,7 @@ class MainActivity : AppCompatActivity() {
                 "\t\t\t[ ]SubSubTask1\n" +
                 "\t\t[ ]SubTask3\n" +
                 "\t\t\t[ ]SubSubTask2\n" +
-                "\t[x]SubTask2\n" +
+                "\t[x]Task2\n" +
                 "\t\t[x]SubTask1\n" +
                 "\t[x]Task3\n" +
                 "\t[ ]Task4\n" +
@@ -45,7 +43,7 @@ class MainActivity : AppCompatActivity() {
         debugBuilder(sample)
 
         // 全タスク初期化
-        MasterTask.initUI(this, taskContainer)
+        MasterTask.initUI(this, taskContainer, taskContainer)
 
         // タスク追加ボタン
         addButton.setOnClickListener(){
@@ -58,15 +56,8 @@ class MainActivity : AppCompatActivity() {
             MasterTask.removeSelectedTask(this)
         }
 
-        Log.d("exportText", MasterTask.export())
-//
         undoBtn.setOnClickListener(){
-            taskContainer.removeAllViews()
-            MasterTask.initUI(this, taskContainer)
-        }
-//
-        redoBtn.setOnClickListener(){
-            MasterTask.setSubtaskDraggable(true, this)
+            Log.d("exportText", MasterTask.export())
         }
 
 

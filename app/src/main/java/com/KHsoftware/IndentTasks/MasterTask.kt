@@ -5,7 +5,7 @@ import android.content.Context
 import androidx.core.view.children
 
 @SuppressLint("StaticFieldLeak")
-object MasterTask: Task(false, "", mutableListOf(), 0){
+object MasterTask: Task(false, "", mutableListOf(), 0, null){
     var taskNum: Int = 0
     var selectedTask: Task? = null
 
@@ -34,12 +34,11 @@ object MasterTask: Task(false, "", mutableListOf(), 0){
         if(selectedTask.id == 0){
             subTasks.clear()
             subtaskLinearLayout.removeAllViews()
-            initUI(context, subtaskLinearLayout)
-            unselectAll()
+            initUI(context, subtaskLinearLayout, taskContainer)
+            unselectAllSubtasks()
         }else{
             deleteSubtaskById(selectedTask.id, context)
         }
         setFoldButton()
     }
-
 }
