@@ -5,7 +5,7 @@ import android.content.Context
 import androidx.core.view.children
 
 @SuppressLint("StaticFieldLeak")
-object MasterTask: Task(false, "", mutableListOf(), 0, null){
+object MasterTask: Task(false, "", mutableListOf(), 0, null, false){
     var taskNum: Int = 0
     var selectedTask: Task? = null
 

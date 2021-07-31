@@ -24,7 +24,8 @@ open class Task(
     var contents: String,
     val subTasks: MutableList<Task> = mutableListOf(),
     val depth: Int,
-    val parent: Task?
+    val parent: Task?,
+    var fold: Boolean
     ){
 
     /** このタスクの選択状態 **/
@@ -187,7 +188,7 @@ open class Task(
         // 追加されるタスクの階層が(このタスクの階層+1)ならば、このタスクの直下にタスクを追加
         // それより深い階層ならば、このタスク配列の直下のタスクのaddSubTaskメソッドを呼び出し
         if(depth == this.depth + 1){
-            subTasks.add(Task(done, contents, mutableListOf<Task>(), this.depth + 1, this))
+            subTasks.add(Task(done, contents, mutableListOf<Task>(), this.depth + 1, this, false))
         }else{
             subTasks.last().addSubtask(done, contents, depth)
         }
@@ -195,13 +196,20 @@ open class Task(
 
     // このタスクの一番最後のサブタスクとして新規タスクを追加
     fun addSubtask(context: Context, contents: String){
-        val newTask = Task(done = false, contents = contents, depth = this.depth+1, parent = this)
+        val newTask = Task(done = false, contents = contents, depth = this.depth+1, parent = this, fold = false)
         this.subTasks += newTask
         newTask.initUI(context, this.subtaskLinearLayout, taskContainer)
         // 選択されている場合は追加するサブタスクにも選択色を付ける
         if(selected){
             newTask.subtaskLinearLayout.setBackgroundColor(Color.parseColor("#DDDDDD"))
             setSubtaskDraggable(true, context)
+        }
+    }
+
+    fun foldSubtasks(fold: Boolean){
+        foldButton.rotation = if(fold) { 180F } else { 0F }
+        for(task in subTasks){
+            task.subtaskLinearLayout.isVisible = !fold
         }
     }
 
@@ -342,10 +350,8 @@ open class Task(
         )
         foldButton.layoutParams = buttonParams
         foldButton.setOnClickListener(){
-            foldButton.rotation += 180F
-            for(task in subTasks){
-                task.subtaskLinearLayout.isVisible = !task.subtaskLinearLayout.isVisible
-            }
+            fold = !fold
+            foldSubtasks(fold)
         }
         // サブタスクが0の時以外折り畳みボタン表示
         foldButton.alpha = if(subTasks.size == 0) { 0f } else { 1f }
@@ -388,5 +394,8 @@ open class Task(
         for(task in subTasks){
             task.initUI(context, subtaskLinearLayout, taskContainer)
         }
+        
+        foldSubtasks(fold)
+
     }
 }

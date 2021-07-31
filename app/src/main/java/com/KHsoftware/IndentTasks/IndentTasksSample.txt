@@ -1,24 +1,24 @@
-[ ]Title
-	[ ]Task1
-		[ ]SubTask1
-		[ ]SubTask2
-			[ ]SubSubTask1
-		[ ]SubTask3
-			[ ]SubSubTask2
-	^[x]SubTask2
-		[x]SubTask1
-	[x]Task3
-	[ ]Task4
-		[x]SubTask1
-		[ ]SubTask2
-			[ ]SubSubTask1
-				[ ]SubSubSubTask1
-					[ ]Sub4Task1
-					[ ]Sub4Task2
-						[ ]Sub5Task1
-							[ ]Sub6Task1
-								[x]Sub7Task1
-								[x]Sub7Task2
-					[ ]Sub4Task3
-					[ ]Sub4Task4
-						[x]Sub5Task2
++[ ]Title
+	-[ ]Task1
+		+[ ]SubTask1
+		+[ ]SubTask2
+			+[ ]SubSubTask1
+		+[ ]SubTask3
+			+[ ]SubSubTask2
+	+[x]SubTask2
+		+[x]SubTask1
+	+[x]Task3
+	+[ ]Task4
+		+[x]SubTask1
+		+[ ]SubTask2
+			+[ ]SubSubTask1
+				+[ ]SubSubSubTask1
+					+[ ]Sub4Task1
+					+[ ]Sub4Task2
+						-[ ]Sub5Task1
+							-[ ]Sub6Task1
+								+[x]Sub7Task1
+								+[x]Sub7Task2
+					+[ ]Sub4Task3
+					-[ ]Sub4Task4
+						+[x]Sub5Task2
