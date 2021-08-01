@@ -14,6 +14,7 @@ import androidx.core.view.marginLeft
 import com.jmedeisis.draglinearlayout.DragLinearLayout
 import kotlinx.android.synthetic.main.activity_main.view.*
 import java.lang.Exception
+import kotlin.math.abs
 
 // できるだけ画面描画は描画するだけ、内部処理の結果を出すだけにする -> redraw()
 // todo Taskを継承してmasterTaskを作成、これは一つしか存在しないsingleton
@@ -58,18 +59,13 @@ open class Task(
                 // 以前選択されたタスクのドラッグを無効化
                 if(MasterTask.selectedTask != null){
                     val selectedTask = MasterTask.selectedTask!!
-                    selectedTask.subtaskLinearLayout.removeAllViews()
-                    // View上で元あった場所
-                    val index = selectedTask.parent?.subtaskLinearLayout?.indexOfChild(selectedTask.subtaskLinearLayout)
-                    selectedTask.initUI(context, selectedTask.parent?.subtaskLinearLayout, taskContainer, index)
+                    setSubtaskDraggable(false, context, selectedTask)
                 }
                 // このタスクのサブタスクのドラッグを有効化
                 setSubtaskDraggable(true, context)
             }else{
                 // ドラッグを無効化
-                subtaskLinearLayout.removeAllViews()
-                val index = parent?.subtaskLinearLayout?.indexOfChild(subtaskLinearLayout)
-                initUI(context, parent?.subtaskLinearLayout, taskContainer, index)
+                setSubtaskDraggable(false, context)
             }
 
             // 選択状態をリセット
@@ -213,6 +209,7 @@ open class Task(
 
     fun foldSubtasks(fold: Boolean, applyToSubtasks: Boolean){
         foldButton.rotation = if(fold) { 180F } else { 0F }
+        this.fold = fold
         for(task in subTasks){
             task.subtaskLinearLayout.isVisible = !fold
             if(applyToSubtasks){
@@ -248,7 +245,7 @@ open class Task(
         var text = ""
         val doneSign = if(done){ "x" }else{ " " }
         val foldSign = if(fold){ "-" }else{ "+" }
-        text += "$tab$foldSign[$doneSign] ${this.contents}\n"
+        text += "$tab$foldSign[$doneSign] ($id) ${this.contents}\n"
         for(i in subTasks){
             text += tab
             text += "\t"
@@ -261,8 +258,9 @@ open class Task(
      * サブタスクのドラッグの有効化/無効化を切り替える
      * 必ずサブタスクのinitUI()の後に実行
      * @param draggable true:ドラッグを有効化, false:ドラッグ無効化
+     * @param dragEnableTask サブタスクのドラッグを有効化するタスク
      */
-    fun setSubtaskDraggable(draggable: Boolean, context: Context){
+    fun setSubtaskDraggable(draggable: Boolean, context: Context, selectedTask: Task = this){
         if(draggable){
             for(task in subTasks){
                 val dragView = task.subtaskLinearLayout
@@ -277,12 +275,13 @@ open class Task(
                 }
             }
         }else{
-            subtaskLinearLayout.removeAllViews()
-            val index = parent?.subtaskLinearLayout?.indexOfChild(subtaskLinearLayout)
-            initUI(context, parent?.subtaskLinearLayout, taskContainer, index)
-            for(task in subTasks){
-                task.setSubtaskDraggable(false, context)
-            }
+            // View上で元あった場所
+            val index = selectedTask.parent?.subtaskLinearLayout?.indexOfChild(selectedTask.subtaskLinearLayout)
+            // DragLinearLayoutをリセット
+            selectedTask.subtaskLinearLayout.removeAllViews()
+            selectedTask.parent?.subtaskLinearLayout?.removeView(selectedTask.subtaskLinearLayout)
+            // todo DragLinearLayoutの途中に挿入するとswapListenerの添字が狂う
+            selectedTask.initUI(context, selectedTask.parent?.subtaskLinearLayout, taskContainer, index)
         }
     }
 
@@ -386,6 +385,7 @@ open class Task(
         rowLinearLayout.addView(editText)
         rowLinearLayout.addView(confirmBtn)
         subtaskLinearLayout.addView(rowLinearLayout)
+        // 親タスクのViewに追加
         if(insert == null){
             if(parentView == null){
                 taskContainer.addView(subtaskLinearLayout)

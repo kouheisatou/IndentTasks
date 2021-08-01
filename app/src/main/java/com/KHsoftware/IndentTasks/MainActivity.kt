@@ -60,6 +60,10 @@ class MainActivity : AppCompatActivity() {
             Log.d("exportText", MasterTask.export())
         }
 
+        redoBtn.setOnClickListener(){
+            Log.d("exportSelectedTask", MasterTask.selectedTask?.export() ?: "何も選択されていません")
+        }
+
         expandBtn.setOnClickListener(){
             MasterTask.foldAllTask(false)
         }

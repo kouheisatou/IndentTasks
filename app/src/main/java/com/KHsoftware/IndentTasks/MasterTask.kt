@@ -3,11 +3,15 @@ package com.KHsoftware.IndentTasks
 import android.annotation.SuppressLint
 import android.content.Context
 import androidx.core.view.children
+import com.jmedeisis.draglinearlayout.DragLinearLayout
 
 @SuppressLint("StaticFieldLeak")
 object MasterTask: Task(false, "", mutableListOf(), 0, null, false){
     var taskNum: Int = 0
     var selectedTask: Task? = null
+//    lateinit var context: Context
+//    lateinit var taskContainer: DragLinearLayout
+
 
     override fun generateId() = 0
 
