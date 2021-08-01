@@ -17,9 +17,13 @@ class MainActivity : AppCompatActivity() {
     // 表示中のタスク
     lateinit var taskBuilder: TaskBuilder
 
+    // 選択されているタスクリストの名前
     var selectedTaskList = ""
 
+    // スピナーのアダプタ
     lateinit var adapter: ArrayAdapter<String>
+
+    // デバイス内に保存されたテキストファイル名リスト
     var files = mutableListOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,6 +63,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun createNewTaskListDialog(){
+        // todo から文字,改行,スペースNG
         val title = EditText(this)
         AlertDialog.Builder(this)
             .setTitle("タイトル入力")
@@ -80,6 +85,9 @@ class MainActivity : AppCompatActivity() {
                 if(position == files.size -1){
                     createNewTaskListDialog()
                 }else{
+                    if(files[position] != selectedTaskList){
+                        updateSpinner(files[position])
+                    }
                     loadFile(files[position])
                     selectedTaskList = files[position]
                 }
