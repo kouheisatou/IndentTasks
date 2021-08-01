@@ -40,20 +40,17 @@ class MainActivity : AppCompatActivity() {
 
 
         // テキストからタスクを生成
-        debugBuilder(sample)
-
-        // 全タスク初期化
-        MasterTask.initUI(this, taskContainer, taskContainer)
+        debugBuilder(sample, this, taskContainer)
 
         // タスク追加ボタン
         addButton.setOnClickListener(){
-            MasterTask.addTaskToSelected(this, editText.text.toString())
+            MasterTask.addTaskToSelected(editText.text.toString())
             editText.setText("")
         }
 
         // タスク削除ボタン
         deleteBtn.setOnClickListener(){
-            MasterTask.removeSelectedTask(this)
+            MasterTask.removeSelectedTask()
         }
 
         undoBtn.setOnClickListener(){

@@ -2,16 +2,33 @@ package com.KHsoftware.IndentTasks
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.drawable.DrawableContainer
 import androidx.core.view.children
 import com.jmedeisis.draglinearlayout.DragLinearLayout
 
 @SuppressLint("StaticFieldLeak")
 object MasterTask: Task(false, "", mutableListOf(), 0, null, false){
-    var taskNum: Int = 0
-    var selectedTask: Task? = null
-//    lateinit var context: Context
-//    lateinit var taskContainer: DragLinearLayout
 
+    /** 作成したインスタンスの総数を保持 **/
+    var taskNum: Int = 0
+    /** 大元の親レイアウト **/
+    lateinit var taskContainer: DragLinearLayout
+    /** 選択中のタスク **/
+    var selectedTask: Task? = null
+
+    lateinit var context: Context
+    var initialized = false
+
+    fun init(done: Boolean, contents: String, fold: Boolean, context: Context, taskContainer: DragLinearLayout){
+        if(!initialized){
+            this.done = done
+            this.contents = contents
+            this.fold = fold
+            this.context = context
+            this.taskContainer = taskContainer
+            this.initialized = true
+        }
+    }
 
     override fun generateId() = 0
 
@@ -33,21 +50,21 @@ object MasterTask: Task(false, "", mutableListOf(), 0, null, false){
     /**
      * 選択されたタスクのサブタスクとして新規タスクを追加する
      */
-    fun addTaskToSelected(context: Context, contents: String){
+    fun addTaskToSelected(contents: String){
         val selectedTask = selectedTask ?: MasterTask
-        selectedTask.addSubtask(context, contents)
+        selectedTask.addSubtask(contents)
         setFoldButton()
     }
 
-    fun removeSelectedTask(context: Context){
+    fun removeSelectedTask(){
         val selectedTask = this.selectedTask ?: return
         if(selectedTask.id == 0){
             subTasks.clear()
             subtaskLinearLayout.removeAllViews()
-            initUI(context, subtaskLinearLayout, taskContainer)
+            initUI(subtaskLinearLayout)
             unselectAllSubtasks()
         }else{
-            deleteSubtaskById(selectedTask.id, context)
+            deleteSubtaskById(selectedTask.id)
         }
         setFoldButton()
     }

@@ -1,6 +1,8 @@
 package com.KHsoftware.IndentTasks
 
+import android.content.Context
 import android.util.Log
+import com.jmedeisis.draglinearlayout.DragLinearLayout
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -32,7 +34,7 @@ class TaskBuilder(private val file: File) {
     }
 }
 
-fun debugBuilder(text: String){
+fun debugBuilder(text: String, context: Context, taskContainer: DragLinearLayout){
     val lines = text.split("\n")
 
     for(line in lines){
@@ -58,12 +60,10 @@ fun debugBuilder(text: String){
         Log.d("builder", content)
 
         if(indentCount == 0){
-            MasterTask.contents = content
-            MasterTask.done = isDone
-            MasterTask.taskNum = 0
-            MasterTask.fold = fold
+            MasterTask.init(isDone, content, fold, context, taskContainer)
         }else{
             MasterTask.addSubtask(isDone, content, indentCount, fold)
         }
     }
+    MasterTask.initUI(taskContainer)
 }

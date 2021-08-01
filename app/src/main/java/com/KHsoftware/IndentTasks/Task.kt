@@ -11,6 +11,8 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.core.view.isVisible
 import androidx.core.view.marginLeft
+import com.KHsoftware.IndentTasks.MasterTask.context
+import com.KHsoftware.IndentTasks.MasterTask.taskContainer
 import com.jmedeisis.draglinearlayout.DragLinearLayout
 import kotlinx.android.synthetic.main.activity_main.view.*
 import java.lang.Exception
@@ -34,13 +36,10 @@ open class Task(
     /** タスクのID **/
     var id = generateId()
 
-    /** 大元の親レイアウト **/
-    lateinit var taskContainer: DragLinearLayout
     /** このタスクを親とする階層全体の線形レイアウトView **/
     lateinit var subtaskLinearLayout: DragLinearLayout
     /** 折り畳み/展開ボタン **/
     lateinit var foldButton: ImageView
-    lateinit var context: Context
 
     open fun generateId() = ++MasterTask.taskNum
 
@@ -59,13 +58,13 @@ open class Task(
                 // 以前選択されたタスクのドラッグを無効化
                 if(MasterTask.selectedTask != null){
                     val selectedTask = MasterTask.selectedTask!!
-                    setSubtaskDraggable(false, context, selectedTask)
+                    setSubtaskDraggable(false)
                 }
                 // このタスクのサブタスクのドラッグを有効化
-                setSubtaskDraggable(true, context)
+                setSubtaskDraggable(true)
             }else{
                 // ドラッグを無効化
-                setSubtaskDraggable(false, context)
+                setSubtaskDraggable(false)
             }
 
             // 選択状態をリセット
@@ -162,7 +161,7 @@ open class Task(
     }
 
     // 引数のIDのタスクを削除する
-    fun deleteSubtaskById(id: Int, context: Context){
+    fun deleteSubtaskById(id: Int){
         for(task in subTasks){
             if(id == task.id){
                 // 選択されているタスクを削除した時
@@ -174,7 +173,7 @@ open class Task(
                 return
             }else{
                 // idが一致しない場合、さらに下の階層もidで検索
-                task.deleteSubtaskById(id, context)
+                task.deleteSubtaskById(id)
             }
         }
     }
@@ -196,14 +195,14 @@ open class Task(
     }
 
     // このタスクの一番最後のサブタスクとして新規タスクを追加
-    fun addSubtask(context: Context, contents: String){
+    fun addSubtask(contents: String){
         val newTask = Task(done = false, contents = contents, depth = this.depth+1, parent = this, fold = false)
         this.subTasks += newTask
-        newTask.initUI(context, this.subtaskLinearLayout, taskContainer)
+        newTask.initUI(this.subtaskLinearLayout)
         // 選択されている場合は追加するサブタスクにも選択色を付ける
         if(selected){
             newTask.subtaskLinearLayout.setBackgroundColor(Color.parseColor("#DDDDDD"))
-            setSubtaskDraggable(true, context)
+            setSubtaskDraggable(true)
         }
     }
 
@@ -260,7 +259,7 @@ open class Task(
      * @param draggable true:ドラッグを有効化, false:ドラッグ無効化
      * @param dragEnableTask サブタスクのドラッグを有効化するタスク
      */
-    fun setSubtaskDraggable(draggable: Boolean, context: Context, selectedTask: Task = this){
+    fun setSubtaskDraggable(draggable: Boolean, selectedTask: Task = this){
         if(draggable){
             for(task in subTasks){
                 val dragView = task.subtaskLinearLayout
@@ -281,7 +280,7 @@ open class Task(
             selectedTask.subtaskLinearLayout.removeAllViews()
             selectedTask.parent?.subtaskLinearLayout?.removeView(selectedTask.subtaskLinearLayout)
             // todo DragLinearLayoutの途中に挿入するとswapListenerの添字が狂う
-            selectedTask.initUI(context, selectedTask.parent?.subtaskLinearLayout, taskContainer, index)
+            selectedTask.initUI(selectedTask.parent?.subtaskLinearLayout, index)
         }
     }
 
@@ -289,13 +288,10 @@ open class Task(
      * このタスクの情報からAndroidの画面上のレイアウトを生成
      * タスクのインスタンスを生成したら実行しUIを初期化する
      * @param parentView 追加先のLinearLayout
-     * @param taskContainer 大元の親レイアウト
      * @param insert サブタスクのレイアウトをparentViewに追加する際、追加先のどこに追加するかを指定
      */
     @SuppressLint("SetTextI18n")
-    open fun initUI(context: Context, parentView: DragLinearLayout?, taskContainer: DragLinearLayout, insert: Int? = null){
-        this.context = context
-        this.taskContainer = taskContainer
+    open fun initUI(parentView: DragLinearLayout?, insert: Int? = null){
 
         // タスク全体のLinearLayout
         subtaskLinearLayout = DragLinearLayout(context)
@@ -402,7 +398,7 @@ open class Task(
 
         // サブタスクのinitUIを実行
         for(task in subTasks){
-            task.initUI(context, subtaskLinearLayout, taskContainer)
+            task.initUI(subtaskLinearLayout)
         }
 
         foldSubtasks(fold, false)
