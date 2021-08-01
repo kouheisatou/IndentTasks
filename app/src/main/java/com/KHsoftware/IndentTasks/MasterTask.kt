@@ -7,28 +7,25 @@ import androidx.core.view.children
 import com.jmedeisis.draglinearlayout.DragLinearLayout
 
 @SuppressLint("StaticFieldLeak")
-object MasterTask: Task(false, "", mutableListOf(), 0, null, false){
+class MasterTask(
+    done: Boolean,
+    contents: String,
+    fold: Boolean
+):
+    Task(
+        done,
+        contents,
+        mutableListOf(),
+        0,
+        null,
+        fold,
+        null
+    ){
 
-    /** 作成したインスタンスの総数を保持 **/
+    /** 作成したサブタスクの総数を保持 **/
     var taskNum: Int = 0
-    /** 大元の親レイアウト **/
-    lateinit var taskContainer: DragLinearLayout
     /** 選択中のタスク **/
     var selectedTask: Task? = null
-
-    lateinit var context: Context
-    var initialized = false
-
-    fun init(done: Boolean, contents: String, fold: Boolean, context: Context, taskContainer: DragLinearLayout){
-        if(!initialized){
-            this.done = done
-            this.contents = contents
-            this.fold = fold
-            this.context = context
-            this.taskContainer = taskContainer
-            this.initialized = true
-        }
-    }
 
     override fun generateId() = 0
 
@@ -51,8 +48,8 @@ object MasterTask: Task(false, "", mutableListOf(), 0, null, false){
      * 選択されたタスクのサブタスクとして新規タスクを追加する
      */
     fun addTaskToSelected(contents: String){
-        val selectedTask = selectedTask ?: MasterTask
-        selectedTask.addSubtask(contents)
+        val selectedTask = selectedTask ?: this
+        selectedTask.addSubtask(contents, this)
         setFoldButton()
     }
 

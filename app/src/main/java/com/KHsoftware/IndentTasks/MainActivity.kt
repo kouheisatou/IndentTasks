@@ -10,6 +10,9 @@ import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 
 class MainActivity : AppCompatActivity() {
+
+    lateinit var taskBuilder: TaskBuilder
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -41,45 +44,44 @@ class MainActivity : AppCompatActivity() {
 
 
 
-
         // テキストからタスクを生成
 //        debugBuilder(sample, this, taskContainer)
 
         // タスク追加ボタン
         addButton.setOnClickListener(){
-            MasterTask.addTaskToSelected(editText.text.toString())
+            taskBuilder.masterTask.addTaskToSelected(editText.text.toString())
             editText.setText("")
         }
 
         // タスク削除ボタン
         deleteBtn.setOnClickListener(){
-            MasterTask.removeSelectedTask()
+            taskBuilder.masterTask.removeSelectedTask()
         }
 
         saveBtn.setOnClickListener(){
-            saveFile(applicationContext, "sample.txt")
+            taskBuilder.saveFile(applicationContext, "sample.txt")
         }
 
         loadBtn.setOnClickListener(){
             taskContainer.removeAllViews()
-            val builder = TaskBuilder("sample.txt", this, taskContainer)
-            builder.build()
+            taskBuilder = TaskBuilder("sample.txt", this, taskContainer)
+            taskBuilder.build()
         }
 
         undoBtn.setOnClickListener(){
-            Log.d("exportText", MasterTask.export())
+            Log.d("exportText", taskBuilder.masterTask.export())
         }
 
         redoBtn.setOnClickListener(){
-            Log.d("exportSelectedTask", MasterTask.selectedTask?.export() ?: "何も選択されていません")
+            Log.d("exportSelectedTask", taskBuilder.masterTask.selectedTask?.export() ?: "何も選択されていません")
         }
 
         expandBtn.setOnClickListener(){
-            MasterTask.foldAllTask(false)
+            taskBuilder.masterTask.foldAllTask(false)
         }
 
         foldBtn.setOnClickListener(){
-            MasterTask.foldAllTask(true)
+            taskBuilder.masterTask.foldAllTask(true)
         }
 
 
