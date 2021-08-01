@@ -7,6 +7,7 @@ import android.util.Log
 import android.widget.TextView
 import com.jmedeisis.draglinearlayout.DragLinearLayout
 import kotlinx.android.synthetic.main.activity_main.*
+import java.io.File
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,8 +40,10 @@ class MainActivity : AppCompatActivity() {
                 "\t\t\t\t\t\t+[x]Sub5Task2"
 
 
+
+
         // テキストからタスクを生成
-        debugBuilder(sample, this, taskContainer)
+//        debugBuilder(sample, this, taskContainer)
 
         // タスク追加ボタン
         addButton.setOnClickListener(){
@@ -51,6 +54,16 @@ class MainActivity : AppCompatActivity() {
         // タスク削除ボタン
         deleteBtn.setOnClickListener(){
             MasterTask.removeSelectedTask()
+        }
+
+        saveBtn.setOnClickListener(){
+            saveFile(applicationContext, "sample.txt")
+        }
+
+        loadBtn.setOnClickListener(){
+            taskContainer.removeAllViews()
+            val builder = TaskBuilder("sample.txt", this, taskContainer)
+            builder.build()
         }
 
         undoBtn.setOnClickListener(){

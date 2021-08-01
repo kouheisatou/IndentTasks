@@ -32,28 +32,38 @@
             <Button
                 android:id="@+id/deleteBtn"
                 android:text="削除"
-                android:layout_width="wrap_content"
+                android:layout_width="70dp"
                 android:layout_height="wrap_content" />
             <Button
                 android:id="@+id/undoBtn"
                 android:text="←"
-                android:layout_width="wrap_content"
+                android:layout_width="40dp"
                 android:layout_height="wrap_content" />
             <Button
                 android:id="@+id/redoBtn"
                 android:text="→"
-                android:layout_width="wrap_content"
+                android:layout_width="40dp"
                 android:layout_height="wrap_content" />
             <Button
                 android:id="@+id/expandBtn"
-                android:layout_width="wrap_content"
+                android:layout_width="70dp"
                 android:layout_height="wrap_content"
-                android:text="全て展開"/>
+                android:text="展開"/>
             <Button
                 android:id="@+id/foldBtn"
-                android:layout_width="wrap_content"
+                android:layout_width="70dp"
                 android:layout_height="wrap_content"
-                android:text="全て畳む"/>
+                android:text="畳む"/>
+            <Button
+                android:id="@+id/saveBtn"
+                android:layout_width="70dp"
+                android:layout_height="wrap_content"
+                android:text="保存"/>
+            <Button
+                android:id="@+id/loadBtn"
+                android:layout_width="70dp"
+                android:layout_height="wrap_content"
+                android:text="読込"/>
         </LinearLayout>
 
         <ScrollView

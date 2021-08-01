@@ -244,10 +244,8 @@ open class Task(
         var text = ""
         val doneSign = if(done){ "x" }else{ " " }
         val foldSign = if(fold){ "-" }else{ "+" }
-        text += "$tab$foldSign[$doneSign] ($id) ${this.contents}\n"
+        text += "$tab$foldSign[$doneSign]${this.contents}\n"
         for(i in subTasks){
-            text += tab
-            text += "\t"
             text += i.export()
         }
         return text
