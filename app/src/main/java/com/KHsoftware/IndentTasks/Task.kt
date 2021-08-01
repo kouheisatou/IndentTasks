@@ -324,6 +324,9 @@ open class Task(
         // 完了チェックボックス
         val chk = CheckBox(TaskBuilder.context)
         chk.isChecked = done
+        chk.setOnClickListener(){
+            done = chk.isChecked
+        }
         // 長押しでタスク選択
         chk.setOnLongClickListener(){
             selectAt(this.id, !selected)
@@ -333,11 +336,6 @@ open class Task(
         // タスクの内容TextView
         val contentsText = TextView(TaskBuilder.context)
         contentsText.text = "($id)$contents"
-        // 長押しでタスク選択
-        contentsText.setOnLongClickListener(){
-            selectAt(this.id, !selected)
-            true
-        }
 
         // 確定ボタン
         val confirmBtn = TextView(TaskBuilder.context)

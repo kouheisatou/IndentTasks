@@ -55,7 +55,7 @@ class TaskBuilder(private val fileName: String, private val context: Context, pr
                 masterTask.addSubtask(isDone, content, indentCount, fold, masterTask)
             }
 
-            line = br?.readLine()
+            line = br.readLine()
         }
         masterTask.initUI(taskContainer)
     }
@@ -66,24 +66,29 @@ class TaskBuilder(private val fileName: String, private val context: Context, pr
 
         val text = masterTask.export()
 
+        Log.d("export", text)
+
         try {
-            FileWriter(file).use { writer -> writer.write(text) }
+            file.writeText(text)
         } catch (e: IOException) {
             e.printStackTrace()
         }
     }
 
-    fun readFile(context: Context, fileName: String): BufferedReader? {
+    fun readFile(context: Context, fileName: String): BufferedReader {
         val file = File(context.filesDir, fileName)
 
-        var br: BufferedReader? = null
         try {
-            br = BufferedReader(FileReader(file))
+            if(file.createNewFile()){
+                file.writeText("+[ ]$fileName")
+            }else{
+                Log.d("alreadyExist", "そのファイルは既に存在しています:$fileName")
+            }
         } catch (e: IOException) {
-            Log.d("fileLoadError", e.stackTrace.toString())
+            e.printStackTrace()
         }
 
-        return br
+        return BufferedReader(FileReader(file))
     }
 }
 

@@ -1,71 +1,90 @@
 package com.KHsoftware.IndentTasks
 
+import android.content.DialogInterface
 import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.widget.TextView
+import android.view.View
+import android.widget.*
+import androidx.appcompat.app.AlertDialog
 import com.jmedeisis.draglinearlayout.DragLinearLayout
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 
 class MainActivity : AppCompatActivity() {
 
+    // 表示中のタスク
     lateinit var taskBuilder: TaskBuilder
+
+    var selectedTaskList = ""
+
+    lateinit var adapter: ArrayAdapter<String>
+    var files = mutableListOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val sample = "+[ ]Title\n" +
-                "\t-[ ]Task1\n" +
-                "\t\t+[ ]SubTask1\n" +
-                "\t\t+[ ]SubTask2\n" +
-                "\t\t\t+[ ]SubSubTask1\n" +
-                "\t\t+[ ]SubTask3\n" +
-                "\t\t\t+[ ]SubSubTask2\n" +
-                "\t+[x]SubTask2\n" +
-                "\t\t+[x]SubTask1\n" +
-                "\t+[x]Task3\n" +
-                "\t+[ ]Task4\n" +
-                "\t\t+[x]SubTask1\n" +
-                "\t\t+[ ]SubTask2\n" +
-                "\t\t\t+[ ]SubSubTask1\n" +
-                "\t\t\t\t+[ ]SubSubSubTask1\n" +
-                "\t\t\t\t\t+[ ]Sub4Task1\n" +
-                "\t\t\t\t\t+[ ]Sub4Task2\n" +
-                "\t\t\t\t\t\t-[ ]Sub5Task1\n" +
-                "\t\t\t\t\t\t\t-[ ]Sub6Task1\n" +
-                "\t\t\t\t\t\t\t\t+[x]Sub7Task1\n" +
-                "\t\t\t\t\t\t\t\t+[x]Sub7Task2\n" +
-                "\t\t\t\t\t+[ ]Sub4Task3\n" +
-                "\t\t\t\t\t-[ ]Sub4Task4\n" +
-                "\t\t\t\t\t\t+[x]Sub5Task2"
+        setListeners()
 
+    }
 
+    fun getFilesName(): MutableList<String>{
+        var files: Array<String> = this.fileList()
+        var arr = mutableListOf<String>()
+        arr.addAll(files)
+        arr.add("新規作成")
+        return arr
+    }
 
-        // テキストからタスクを生成
-//        debugBuilder(sample, this, taskContainer)
-
-        // タスク追加ボタン
-        addButton.setOnClickListener(){
-            taskBuilder.masterTask.addTaskToSelected(editText.text.toString())
-            editText.setText("")
+    /**
+     * @param top spinnerの一番上に持ってくる要素
+     */
+    fun updateSpinner(top: String?){
+        files = getFilesName()
+        if(top != null){
+            files.remove(top)
+            files.add(0, top)
         }
+        adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, files)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        loadSpinner.adapter = adapter
+    }
 
-        // タスク削除ボタン
-        deleteBtn.setOnClickListener(){
-            taskBuilder.masterTask.removeSelectedTask()
-        }
+    fun loadFile(filename: String){
+        taskContainer.removeAllViews()
+        taskBuilder = TaskBuilder(filename, this, taskContainer)
+        taskBuilder.build()
+    }
 
-        saveBtn.setOnClickListener(){
-            taskBuilder.saveFile(applicationContext, "sample.txt")
-        }
+    fun createNewTaskListDialog(){
+        val title = EditText(this)
+        AlertDialog.Builder(this)
+            .setTitle("タイトル入力")
+            .setMessage("タスクリストのタイトルを入力してください")
+            .setView(title)
+            .setPositiveButton("作成", DialogInterface.OnClickListener(){dialog, which ->
+                loadFile("${title.text}.txt")
+                updateSpinner("${title.text}.txt")
+                selectedTaskList = title.text.toString()
+            })
+            .setNegativeButton("キャンセル", null)
+            .show()
+    }
 
-        loadBtn.setOnClickListener(){
-            taskContainer.removeAllViews()
-            taskBuilder = TaskBuilder("sample.txt", this, taskContainer)
-            taskBuilder.build()
+    fun setListeners(){
+        updateSpinner(null)
+        loadSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                if(position == files.size -1){
+                    createNewTaskListDialog()
+                }else{
+                    loadFile(files[position])
+                    selectedTaskList = files[position]
+                }
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) { }
         }
 
         undoBtn.setOnClickListener(){
@@ -85,95 +104,20 @@ class MainActivity : AppCompatActivity() {
         }
 
 
+        // タスク追加ボタン
+        addButton.setOnClickListener(){
+            taskBuilder.masterTask.addTaskToSelected(editText.text.toString())
+            editText.setText("")
+        }
 
+        // タスク削除ボタン
+        deleteBtn.setOnClickListener(){
+            taskBuilder.masterTask.removeSelectedTask()
+        }
 
-
-//        // DragLinearLayout同士の入れ子状態で行入れ替えできるかテスト
-//        val dragLinearLayout1 = DragLinearLayout(this)
-//        val dragLinearLayout2 = DragLinearLayout(this)
-//        var dragLinearLayout31 = DragLinearLayout(this)
-//        var dragLinearLayout32 = DragLinearLayout(this)
-//        var dragLinearLayout33 = DragLinearLayout(this)
-//        val textView1 = TextView(this)
-//        textView1.text = "1"
-//        val textView2 = TextView(this)
-//        textView2.text = "2"
-//        val textView3 = TextView(this)
-//        textView3.text = "3"
-//        val textView4 = TextView(this)
-//        textView1.text = "4"
-//        val textView5 = TextView(this)
-//        textView2.text = "5"
-//        val textView6 = TextView(this)
-//        textView3.text = "6"
-//        val textView7 = TextView(this)
-//        textView1.text = "7"
-//        val textView8 = TextView(this)
-//        textView2.text = "8"
-//        val textView9 = TextView(this)
-//        textView3.text = "9"
-//
-//        dragLinearLayout31.addView(textView1)
-//        dragLinearLayout31.addView(textView2)
-//        dragLinearLayout31.addView(textView3)
-//        dragLinearLayout32.addView(textView4)
-//        dragLinearLayout32.addView(textView5)
-//        dragLinearLayout32.addView(textView6)
-//        dragLinearLayout33.addView(textView7)
-//        dragLinearLayout33.addView(textView8)
-//        dragLinearLayout33.addView(textView9)
-//        dragLinearLayout2.addView(dragLinearLayout31)
-//        dragLinearLayout2.addView(dragLinearLayout32)
-//        dragLinearLayout2.addView(dragLinearLayout33)
-//        dragLinearLayout1.addView(dragLinearLayout2)
-//        taskContainer.addView(dragLinearLayout1)
-//
-//        for(i in 0..2){
-//            val child = dragLinearLayout2.getChildAt(i)
-//            dragLinearLayout2.setViewDraggable(child, child)
-//        }
-//        for(i in 1..2){
-//            val child1 = dragLinearLayout31.getChildAt(i)
-//            dragLinearLayout31.setViewDraggable(child1, child1)
-//            val child2 = dragLinearLayout32.getChildAt(i)
-//            dragLinearLayout32.setViewDraggable(child2, child2)
-//            val child3 = dragLinearLayout33.getChildAt(i)
-//            dragLinearLayout33.setViewDraggable(child3, child3)
-//
-//        }
-
-
-//        // ドラッグ無効化 むり
-//        deleteBtn.setOnClickListener(){
-//            dragLinearLayout2.removeAllViews()
-//            dragLinearLayout3.removeAllViews()
-//            dragLinearLayout3 = DragLinearLayout(this)
-//            dragLinearLayout3.addView(textView1)
-//            dragLinearLayout3.addView(textView2)
-//            dragLinearLayout3.addView(textView3)
-//            dragLinearLayout2.addView(dragLinearLayout3)
-//        }
-
-
-
-
-
-//        var printText = ""
-//        for(i in taskList){
-//            printText += i.export()
-//        }
-
-//        text.text = printText
-//        text.typeface = Typeface.MONOSPACE
-
-
-//        for(i in taskList){
-//            i.initUI(this, taskContainer)
-//        }
-
-
-
-
+        saveBtn.setOnClickListener(){
+            taskBuilder.saveFile(applicationContext, selectedTaskList)
+        }
 
     }
 }
