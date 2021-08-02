@@ -72,7 +72,7 @@
             <Spinner
                 android:id="@+id/loadSpinner"
                 android:layout_marginHorizontal="1dp"
-                android:layout_width="70dp"
+                android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:text="読込"/>
         </LinearLayout>

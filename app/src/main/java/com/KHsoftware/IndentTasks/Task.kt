@@ -5,9 +5,12 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.text.InputType
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.core.view.isVisible
 import androidx.core.view.marginLeft
@@ -347,6 +350,19 @@ open class Task(
         val editText = EditText(TaskBuilder.context)
         editText.setText(contentsText.text)
         editText.isVisible = false
+        editText.maxLines = 1
+        editText.setOnKeyListener { v, keyCode, event ->
+            if(event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER){
+                val inputMethodManager = TaskBuilder.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                inputMethodManager.hideSoftInputFromWindow(editText.windowToken, InputMethodManager.RESULT_UNCHANGED_SHOWN)
+                contentsText.text = editText.text
+                contentsText.isVisible = true
+                editText.isVisible = false
+                confirmBtn.isVisible = false
+                editText.setText(editText.text.toString().replace("\n", ""))
+            }
+            false
+        }
 
         //折り畳みボタン
         foldButton = ImageView(TaskBuilder.context)
@@ -403,6 +419,7 @@ open class Task(
         }
 
         foldSubtasks(fold, false)
+
 
     }
 }

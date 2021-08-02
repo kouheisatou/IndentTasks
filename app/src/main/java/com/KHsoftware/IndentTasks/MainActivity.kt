@@ -4,8 +4,11 @@ import android.content.DialogInterface
 import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
+import android.view.WindowManager
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import com.jmedeisis.draglinearlayout.DragLinearLayout
@@ -127,5 +130,14 @@ class MainActivity : AppCompatActivity() {
             taskBuilder.saveFile(applicationContext, selectedTaskList)
         }
 
+        // エンターキーでタスク追加
+        editText.maxLines = 1
+        editText.setOnKeyListener { v, keyCode, event ->
+            if(event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER){
+                taskBuilder.masterTask.addTaskToSelected(editText.text.toString())
+                editText.setText("")
+            }
+            false
+        }
     }
 }
