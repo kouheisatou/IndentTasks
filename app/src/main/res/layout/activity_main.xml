@@ -28,18 +28,18 @@
                 android:layout_width="50dp"
                 android:textSize="8dp"
                 android:layout_height="match_parent" />
-            <Button
-                android:id="@+id/undoBtn"
-                android:text="←"
-                android:layout_marginHorizontal="1dp"
-                android:layout_width="40dp"
-                android:layout_height="match_parent" />
-            <Button
-                android:id="@+id/redoBtn"
-                android:text="→"
-                android:layout_marginHorizontal="1dp"
-                android:layout_width="40dp"
-                android:layout_height="match_parent" />
+<!--            <Button-->
+<!--                android:id="@+id/undoBtn"-->
+<!--                android:text="←"-->
+<!--                android:layout_marginHorizontal="1dp"-->
+<!--                android:layout_width="40dp"-->
+<!--                android:layout_height="match_parent" />-->
+<!--            <Button-->
+<!--                android:id="@+id/redoBtn"-->
+<!--                android:text="→"-->
+<!--                android:layout_marginHorizontal="1dp"-->
+<!--                android:layout_width="40dp"-->
+<!--                android:layout_height="match_parent" />-->
             <Button
                 android:id="@+id/expandBtn"
                 android:layout_width="50dp"

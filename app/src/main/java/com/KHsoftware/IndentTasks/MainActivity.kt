@@ -105,14 +105,14 @@ class MainActivity : AppCompatActivity() {
             }
             override fun onNothingSelected(parent: AdapterView<*>?) { }
         }
-
-        undoBtn.setOnClickListener(){
-            Log.d("exportText", taskBuilder.masterTask.export())
-        }
-
-        redoBtn.setOnClickListener(){
-            Log.d("exportSelectedTask", taskBuilder.masterTask.selectedTask?.export() ?: "何も選択されていません")
-        }
+//
+//        undoBtn.setOnClickListener(){
+//            Log.d("exportText", taskBuilder.masterTask.export())
+//        }
+//
+//        redoBtn.setOnClickListener(){
+//            Log.d("exportSelectedTask", taskBuilder.masterTask.selectedTask?.export() ?: "何も選択されていません")
+//        }
 
         expandBtn.setOnClickListener(){
             taskBuilder.masterTask.foldAllTask(false)
