@@ -1,10 +1,15 @@
 package com.KHsoftware.IndentTasks
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
+import android.content.DialogInterface
 import android.graphics.drawable.DrawableContainer
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.children
 import com.jmedeisis.draglinearlayout.DragLinearLayout
+import java.io.File
+import java.io.IOException
 
 @SuppressLint("StaticFieldLeak")
 class MasterTask(
@@ -56,13 +61,33 @@ class MasterTask(
     fun removeSelectedTask(){
         val selectedTask = this.selectedTask ?: return
         if(selectedTask.id == 0){
-            subTasks.clear()
-            subtaskLinearLayout.removeAllViews()
-            initUI(subtaskLinearLayout)
-            unselectAllSubtasks()
+//            subTasks.clear()
+//            subtaskLinearLayout.removeAllViews()
+//            initUI(subtaskLinearLayout)
+//            unselectAllSubtasks()
+            deleteSelectedFile(contents)
         }else{
             deleteSubtaskById(selectedTask.id)
         }
         setFoldButton()
     }
+
+    fun deleteSelectedFile(filename: String){
+        AlertDialog.Builder(TaskBuilder.context)
+            .setTitle("タスクリスト削除")
+            .setMessage("本当に削除しますか？")
+            .setPositiveButton("削除", DialogInterface.OnClickListener(){ dialog, which ->
+                try {
+                    val file = File(TaskBuilder.context.filesDir, filename)
+                    file.delete()
+                    subtaskLinearLayout.removeAllViews()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+                (TaskBuilder.context as MainActivity).updateSpinner(null)
+            })
+            .setNegativeButton("キャンセル", null)
+            .show()
+    }
+
 }
