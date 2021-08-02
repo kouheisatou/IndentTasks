@@ -66,7 +66,7 @@ open class Task(
 
                 // 以前選択されたタスクのドラッグを無効化
                 if(masterTask.selectedTask != null){
-                    setSubtaskDraggable(false)
+                    setSubtaskDraggable(false, masterTask.selectedTask!!)
                 }
                 // このタスクのサブタスクのドラッグを有効化
                 setSubtaskDraggable(true)
@@ -285,7 +285,6 @@ open class Task(
             // DragLinearLayoutをリセット
             selectedTask.subtaskLinearLayout.removeAllViews()
             selectedTask.parent?.subtaskLinearLayout?.removeView(selectedTask.subtaskLinearLayout)
-            // todo DragLinearLayoutの途中に挿入するとswapListenerの添字が狂う
             selectedTask.initUI(selectedTask.parent?.subtaskLinearLayout, index)
         }
     }
