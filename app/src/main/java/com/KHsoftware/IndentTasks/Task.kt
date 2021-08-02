@@ -337,7 +337,7 @@ open class Task(
 
         // タスクの内容TextView
         val contentsText = TextView(TaskBuilder.context)
-        contentsText.text = contents
+        contentsText.text = if(contents == ""){"未入力タスク"}else{contents}
 
         // 確定ボタン
         val confirmBtn = TextView(TaskBuilder.context)
