@@ -4,6 +4,7 @@ import android.content.DialogInterface
 import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.text.InputType
 import android.util.Log
 import android.view.KeyEvent
@@ -11,6 +12,8 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import com.jmedeisis.draglinearlayout.DragLinearLayout
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
@@ -33,6 +36,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        AppCompatDelegate.setDefaultNightMode(MODE_NIGHT_NO)
         setListeners()
 
     }
@@ -77,7 +81,11 @@ class MainActivity : AppCompatActivity() {
                 updateSpinner("${title.text}.txt")
                 selectedTaskList = title.text.toString()
             })
-            .setNegativeButton("キャンセル", null)
+            .setNegativeButton("キャンセル", DialogInterface.OnClickListener(){dialog, which ->
+                val temp = selectedTaskList
+                updateSpinner(temp)
+                selectedTaskList = title.text.toString()
+            })
             .show()
     }
 
