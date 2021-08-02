@@ -338,7 +338,7 @@ open class Task(
 
         // タスクの内容TextView
         val contentsText = TextView(TaskBuilder.context)
-        contentsText.text = "($id)$contents"
+        contentsText.text = contents
 
         // 確定ボタン
         val confirmBtn = TextView(TaskBuilder.context)
@@ -355,7 +355,7 @@ open class Task(
             if(event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER){
                 val inputMethodManager = TaskBuilder.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 inputMethodManager.hideSoftInputFromWindow(editText.windowToken, InputMethodManager.RESULT_UNCHANGED_SHOWN)
-                contentsText.text = editText.text
+                contentsText.text = if(editText.text.toString() == ""){"未入力タスク"}else{editText.text}
                 contentsText.isVisible = true
                 editText.isVisible = false
                 confirmBtn.isVisible = false
@@ -380,15 +380,18 @@ open class Task(
 
         // タスク内容テキスト編集時の挙動
         contentsText.setOnClickListener(){
-            contentsText.isVisible = false
-            editText.isVisible = true
-            confirmBtn.isVisible = true
+            if(parent != null){
+                contentsText.isVisible = false
+                editText.isVisible = true
+                confirmBtn.isVisible = true
+            }
         }
         confirmBtn.setOnClickListener(){
             contentsText.text = editText.text
             contentsText.isVisible = true
             editText.isVisible = false
             confirmBtn.isVisible = false
+            contentsText.text = if(editText.text.toString() == ""){"未入力タスク"}else{editText.text}
         }
 
         // 各Viewをアタッチ

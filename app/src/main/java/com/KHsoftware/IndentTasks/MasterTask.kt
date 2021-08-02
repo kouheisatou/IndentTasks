@@ -54,7 +54,11 @@ class MasterTask(
      */
     fun addTaskToSelected(contents: String){
         val selectedTask = selectedTask ?: this
-        selectedTask.addSubtask(contents, this)
+        if(contents == ""){
+            selectedTask.addSubtask("未入力タスク", this)
+        }else{
+            selectedTask.addSubtask(contents, this)
+        }
         setFoldButton()
     }
 
