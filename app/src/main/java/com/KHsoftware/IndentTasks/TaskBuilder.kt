@@ -6,13 +6,15 @@ import android.util.Log
 import com.jmedeisis.draglinearlayout.DragLinearLayout
 import java.io.*
 
-class TaskBuilder(private val fileName: String, private val context: Context, private val taskContainer: DragLinearLayout) {
+class TaskBuilder(private val fileName: String, private val context: Context, private val taskContainer: DragLinearLayout, private val viewModel: TaskViewModel) {
 
     companion object {
         @SuppressLint("StaticFieldLeak")
         lateinit var context: Context
         @SuppressLint("StaticFieldLeak")
         lateinit var taskContainer: DragLinearLayout
+        @SuppressLint("StaticFieldLeak")
+        lateinit var viewModel: TaskViewModel
     }
 
     /** 全ての親タスク **/
@@ -22,6 +24,7 @@ class TaskBuilder(private val fileName: String, private val context: Context, pr
 
         TaskBuilder.context = context
         TaskBuilder.taskContainer = taskContainer
+        TaskBuilder.viewModel = viewModel
 
         val br = readFile(context, fileName)
         var line = br?.readLine()

@@ -6,100 +6,14 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragmentContainerView"
+        android:name="com.KHsoftware.IndentTasks.TaskFragment"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <LinearLayout
-            android:id="@+id/controlBar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/deleteBtn"
-                android:text="削除"
-                android:layout_marginHorizontal="1dp"
-                android:layout_width="50dp"
-                android:textSize="8dp"
-                android:layout_height="match_parent" />
-<!--            <Button-->
-<!--                android:id="@+id/undoBtn"-->
-<!--                android:text="←"-->
-<!--                android:layout_marginHorizontal="1dp"-->
-<!--                android:layout_width="40dp"-->
-<!--                android:layout_height="match_parent" />-->
-<!--            <Button-->
-<!--                android:id="@+id/redoBtn"-->
-<!--                android:text="→"-->
-<!--                android:layout_marginHorizontal="1dp"-->
-<!--                android:layout_width="40dp"-->
-<!--                android:layout_height="match_parent" />-->
-            <Button
-                android:id="@+id/expandBtn"
-                android:layout_width="50dp"
-                android:layout_marginHorizontal="1dp"
-                android:textSize="8dp"
-                android:layout_height="match_parent"
-                android:text="展開"/>
-            <Button
-                android:id="@+id/foldBtn"
-                android:layout_width="50dp"
-                android:layout_marginHorizontal="1dp"
-                android:textSize="8dp"
-                android:layout_height="match_parent"
-                android:text="畳む"/>
-            <Spinner
-                android:id="@+id/loadSpinner"
-                android:layout_marginHorizontal="1dp"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:textSize="8dp"/>
-        </LinearLayout>
-
-        <ScrollView
-            android:id="@+id/scrollView"
-            android:layout_weight="1"
-            android:layout_width="match_parent"
-            android:layout_height="0dp">
-
-            <com.jmedeisis.draglinearlayout.DragLinearLayout
-                android:id="@+id/taskContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"/>
-        </ScrollView>
-
-
-        <LinearLayout
-            android:id="@+id/inputBar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <EditText
-                android:id="@+id/editText"
-                android:textSize="20dp"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"/>
-
-            <Button
-                android:id="@+id/addButton"
-                android:text="追加"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-    </LinearLayout>
-
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

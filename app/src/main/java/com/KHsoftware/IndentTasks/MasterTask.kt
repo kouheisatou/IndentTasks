@@ -9,9 +9,11 @@ import android.graphics.drawable.DrawableContainer
 import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.children
+import androidx.lifecycle.viewModelScope
 import com.jmedeisis.draglinearlayout.DragLinearLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
@@ -138,13 +140,15 @@ class MasterTask(
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
-                (TaskBuilder.context as MainActivity).updateSpinner(null)
+                (TaskBuilder.context as TaskFragment).updateSpinner(null)
             })
             .setNegativeButton("キャンセル", null)
             .show()
     }
 
     override fun save(){
-        taskBuilder.saveFile(TaskBuilder.context, contents)
+        TaskBuilder.viewModel.viewModelScope.launch {
+            taskBuilder.saveFile(TaskBuilder.context, contents)
+        }
     }
 }

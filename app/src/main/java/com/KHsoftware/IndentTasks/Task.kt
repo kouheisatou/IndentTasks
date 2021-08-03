@@ -14,8 +14,10 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.core.view.isVisible
 import androidx.core.view.marginLeft
+import androidx.lifecycle.viewModelScope
 import com.jmedeisis.draglinearlayout.DragLinearLayout
 import kotlinx.android.synthetic.main.activity_main.view.*
+import kotlinx.coroutines.launch
 import java.lang.Exception
 import kotlin.math.abs
 
@@ -419,6 +421,8 @@ open class Task(
     }
 
     open fun save(){
-        taskBuilder.saveFile(TaskBuilder.context, masterTask!!.contents)
+        TaskBuilder.viewModel.viewModelScope.launch {
+            taskBuilder.saveFile(TaskBuilder.context, masterTask!!.contents)
+        }
     }
 }
