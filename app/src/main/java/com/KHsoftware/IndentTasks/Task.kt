@@ -31,7 +31,7 @@ open class Task(
     val parent: Task?,
     var fold: Boolean,
     val masterTask: MasterTask?
-    ){
+    ): TaskInterface{
 
     /** このタスクの選択状態 **/
     var selected = false
@@ -53,7 +53,7 @@ open class Task(
      * @param id 選択するタスクのID
      * @param select true:選択, false:選択解除
      */
-    fun selectAt(id: Int, select: Boolean){
+    override fun selectAt(id: Int, select: Boolean){
 
         // MasterTaskがnullの場合は、そのタスクは確実にマスタータスク
         val masterTask = masterTask ?: this as MasterTask
@@ -69,14 +69,14 @@ open class Task(
                     setSubtaskDraggable(false, masterTask.selectedTask!!)
                 }
                 // このタスクのサブタスクのドラッグを有効化
-                setSubtaskDraggable(true)
+                setSubtaskDraggable(true, this)
             }else{
                 // ドラッグを無効化
-                setSubtaskDraggable(false)
+                setSubtaskDraggable(false, this)
             }
 
             // 選択状態をリセット
-            masterTask.unselectAllSubtasks()
+            masterTask.makeAllSubtaskSelected(false)
 
             // 選択された場合はマスタータスクに選択されたタスクを保持、選択が解除された場合はnullを代入
             masterTask.selectedTask = if(select){this}else{null}
@@ -104,31 +104,12 @@ open class Task(
         Log.d("selected", masterTask.selectedTask?.id.toString() + ", " + masterTask.selectedTask?.selected.toString())
     }
 
-    fun unselectAllSubtasks(){
-
-        // 選択色を解除
-        val color = Color.parseColor("#FFFFFF")
-        masterTask?.selectedTask?.subtaskLinearLayout?.setBackgroundColor(color)
-
-        // 全てのサブタスクで実行
-        for(task in subTasks){
-            task.subtaskLinearLayout.setBackgroundColor(color)
-            task.selected = false
-            task.unselectAllSubtasks()
-        }
-
-        this.selected = false
-        masterTask?.selectedTask = null
-
-        Log.d("selected", masterTask?.selectedTask?.id.toString())
-
-    }
 
     /**
      * このタスクが持つサブタスク全てを選択または選択解除する
      * @param select true:選択, false:選択解除
      */
-    fun makeAllSubtaskSelected(select: Boolean){
+    override fun makeAllSubtaskSelected(select: Boolean){
 
         // このタスクが持つサブタスクを全て選択済みにする
         for(task in subTasks){
@@ -169,7 +150,7 @@ open class Task(
     }
 
     // 引数のIDのタスクを削除する
-    fun deleteSubtaskById(id: Int){
+    override fun deleteSubtaskById(id: Int){
         for(task in subTasks){
             if(id == task.id){
                 // 選択されているタスクを削除した時
@@ -203,18 +184,18 @@ open class Task(
     }
 
     // このタスクの一番最後のサブタスクとして新規タスクを追加
-    fun addSubtask(contents: String, masterTask: MasterTask?){
+    override fun addSubtask(contents: String, masterTask: MasterTask?){
         val newTask = Task(done = false, contents = contents, depth = this.depth+1, parent = this, fold = false, masterTask = masterTask)
         this.subTasks += newTask
         newTask.initUI(this.subtaskLinearLayout)
         // 選択されている場合は追加するサブタスクにも選択色を付ける
         if(selected){
             newTask.subtaskLinearLayout.setBackgroundColor(Color.parseColor("#DDDDDD"))
-            setSubtaskDraggable(true)
+            setSubtaskDraggable(true, this)
         }
     }
 
-    fun foldSubtasks(fold: Boolean, applyToSubtasks: Boolean){
+    override fun foldSubtasks(fold: Boolean, applyToSubtasks: Boolean){
         foldButton.rotation = if(fold) { 180F } else { 0F }
         this.fold = fold
         for(task in subTasks){
@@ -226,7 +207,7 @@ open class Task(
     }
 
     // 引数のIDのタスクを返す
-    open fun findTaskById(id: Int): Task?{
+    override fun findTaskById(id: Int): Task?{
         var result: Task? = null
         for(task in subTasks){
             if(id == task.id){
@@ -243,7 +224,7 @@ open class Task(
     /**
      * このタスクの情報をテキストに書き出す
      */
-    open fun export(): String{
+    override fun export(): String{
         var tab = ""
         for(i in 0 until depth){
             tab += "\t"
@@ -265,7 +246,7 @@ open class Task(
      * @param draggable true:ドラッグを有効化, false:ドラッグ無効化
      * @param dragEnableTask サブタスクのドラッグを有効化するタスク
      */
-    fun setSubtaskDraggable(draggable: Boolean, selectedTask: Task = this){
+    override fun setSubtaskDraggable(draggable: Boolean, selectedTask: Task){
         if(draggable){
             for(task in subTasks){
                 val dragView = task.subtaskLinearLayout

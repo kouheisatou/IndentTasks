@@ -4,7 +4,9 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.DialogInterface
+import android.graphics.Color
 import android.graphics.drawable.DrawableContainer
+import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.children
 import com.jmedeisis.draglinearlayout.DragLinearLayout
@@ -74,6 +76,28 @@ class MasterTask(
             deleteSubtaskById(selectedTask.id)
         }
         setFoldButton()
+    }
+
+    override fun makeAllSubtaskSelected(select: Boolean){
+        if(select){
+            super.makeAllSubtaskSelected(select)
+        }else{
+            // 選択色を解除
+            val color = Color.parseColor("#FFFFFF")
+            masterTask?.selectedTask?.subtaskLinearLayout?.setBackgroundColor(color)
+
+            // 全てのサブタスクで実行
+            for(task in subTasks){
+                task.subtaskLinearLayout.setBackgroundColor(color)
+                task.selected = false
+                task.makeAllSubtaskSelected(select)
+            }
+
+            this.selected = false
+            masterTask?.selectedTask = null
+
+            Log.d("selected", masterTask?.selectedTask?.id.toString())
+        }
     }
 
     fun deleteSelectedFile(filename: String){
