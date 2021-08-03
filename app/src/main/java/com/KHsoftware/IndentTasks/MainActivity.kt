@@ -16,7 +16,9 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
 import com.jmedeisis.draglinearlayout.DragLinearLayout
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.coroutineScope
 import java.io.File
+import kotlin.coroutines.coroutineContext
 
 class MainActivity : AppCompatActivity() {
 
@@ -115,34 +117,32 @@ class MainActivity : AppCompatActivity() {
 //        }
 
         expandBtn.setOnClickListener(){
-            taskBuilder.masterTask.foldAllTask(false)
+            taskBuilder.masterTask.foldSubtasks(false, true)
         }
 
         foldBtn.setOnClickListener(){
-            taskBuilder.masterTask.foldAllTask(true)
+            taskBuilder.masterTask.foldSubtasks(true, true)
         }
 
 
         // タスク追加ボタン
         addButton.setOnClickListener(){
-            taskBuilder.masterTask.addTaskToSelected(editText.text.toString())
+            taskBuilder.masterTask.addSubtask(editText.text.toString(), taskBuilder.masterTask, taskBuilder)
             editText.setText("")
         }
 
         // タスク削除ボタン
         deleteBtn.setOnClickListener(){
-            taskBuilder.masterTask.removeSelectedTask()
-        }
-
-        saveBtn.setOnClickListener(){
-            taskBuilder.saveFile(applicationContext, selectedTaskList)
+            if(taskBuilder.masterTask.selectedTask != null){
+                taskBuilder.masterTask.deleteSubtaskById(taskBuilder.masterTask.selectedTask!!.id)
+            }
         }
 
         // エンターキーでタスク追加
         editText.inputType = InputType.TYPE_CLASS_TEXT
         editText.setOnKeyListener { v, keyCode, event ->
             if(event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER){
-                taskBuilder.masterTask.addTaskToSelected(editText.text.toString())
+                taskBuilder.masterTask.addSubtask(editText.text.toString(), taskBuilder.masterTask, taskBuilder)
                 editText.setText("")
             }
             false

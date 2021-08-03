@@ -30,7 +30,8 @@ open class Task(
     val depth: Int,
     val parent: Task?,
     var fold: Boolean,
-    val masterTask: MasterTask?
+    val masterTask: MasterTask?,
+    val taskBuilder: TaskBuilder
     ): TaskInterface{
 
     /** このタスクの選択状態 **/
@@ -173,19 +174,19 @@ open class Task(
      * @param contents タスクの内容
      * @param depth 追加するタスクの階層
      */
-    fun addSubtask(done: Boolean, contents: String, depth: Int, fold: Boolean, masterTask: MasterTask?){
+    fun addSubtask(done: Boolean, contents: String, depth: Int, fold: Boolean, masterTask: MasterTask?, taskBuilder: TaskBuilder){
         // 追加されるタスクの階層が(このタスクの階層+1)ならば、このタスクの直下にタスクを追加
         // それより深い階層ならば、このタスク配列の直下のタスクのaddSubTaskメソッドを呼び出し
         if(depth == this.depth + 1){
-            subTasks.add(Task(done, contents, mutableListOf<Task>(), this.depth + 1, this, fold, masterTask))
+            subTasks.add(Task(done, contents, mutableListOf<Task>(), this.depth + 1, this, fold, masterTask, taskBuilder))
         }else{
-            subTasks.last().addSubtask(done, contents, depth, fold, masterTask)
+            subTasks.last().addSubtask(done, contents, depth, fold, masterTask, taskBuilder)
         }
     }
 
     // このタスクの一番最後のサブタスクとして新規タスクを追加
-    override fun addSubtask(contents: String, masterTask: MasterTask?){
-        val newTask = Task(done = false, contents = contents, depth = this.depth+1, parent = this, fold = false, masterTask = masterTask)
+    override fun addSubtask(contents: String, masterTask: MasterTask?, taskBuilder: TaskBuilder){
+        val newTask = Task(done = false, contents = contents, depth = this.depth+1, parent = this, fold = false, masterTask = masterTask, taskBuilder = taskBuilder)
         this.subTasks += newTask
         newTask.initUI(this.subtaskLinearLayout)
         // 選択されている場合は追加するサブタスクにも選択色を付ける
@@ -258,6 +259,7 @@ open class Task(
                     val temp = subTasks[firstPosition - 1]
                     subTasks[firstPosition - 1] = subTasks[secondPosition - 1]
                     subTasks[secondPosition - 1] = temp
+                    save()
                 }
             }
         }else{
@@ -309,6 +311,7 @@ open class Task(
         chk.isChecked = done
         chk.setOnClickListener(){
             done = chk.isChecked
+            save()
         }
         // 長押しでタスク選択
         chk.setOnLongClickListener(){
@@ -340,6 +343,8 @@ open class Task(
                 editText.isVisible = false
                 confirmBtn.isVisible = false
                 editText.setText(editText.text.toString().replace("\n", ""))
+                contents = editText.text.toString()
+                save()
             }
             false
         }
@@ -354,6 +359,7 @@ open class Task(
         foldButton.setOnClickListener(){
             fold = !fold
             foldSubtasks(fold, false)
+            save()
         }
         // サブタスクが0の時以外折り畳みボタン表示
         foldButton.alpha = if(subTasks.size == 0) { 0f } else { 1f }
@@ -364,6 +370,7 @@ open class Task(
                 contentsText.isVisible = false
                 editText.isVisible = true
                 confirmBtn.isVisible = true
+                save()
             }
         }
         confirmBtn.setOnClickListener(){
@@ -372,6 +379,8 @@ open class Task(
             editText.isVisible = false
             confirmBtn.isVisible = false
             contentsText.text = if(editText.text.toString() == ""){"未入力タスク"}else{editText.text}
+            contents = editText.text.toString()
+            save()
         }
 
         // 各Viewをアタッチ
@@ -404,5 +413,10 @@ open class Task(
         foldSubtasks(fold, false)
 
 
+    }
+
+    open fun save(){
+        taskBuilder.saveFile(TaskBuilder.context, masterTask!!.contents)
+//        Log.d("save", "save")
     }
 }

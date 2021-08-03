@@ -50,9 +50,9 @@ class TaskBuilder(private val fileName: String, private val context: Context, pr
             Log.d("builder", content)
 
             if(indentCount == 0){
-                masterTask = MasterTask(isDone, content, fold)
+                masterTask = MasterTask(isDone, content, fold, this)
             }else{
-                masterTask.addSubtask(isDone, content, indentCount, fold, masterTask)
+                masterTask.addSubtask(isDone, content, indentCount, fold, masterTask, this)
             }
 
             line = br.readLine()

@@ -54,13 +54,6 @@
                 android:textSize="8dp"
                 android:layout_height="match_parent"
                 android:text="畳む"/>
-            <Button
-                android:id="@+id/saveBtn"
-                android:layout_width="50dp"
-                android:layout_marginHorizontal="1dp"
-                android:textSize="8dp"
-                android:layout_height="match_parent"
-                android:text="保存"/>
             <Spinner
                 android:id="@+id/loadSpinner"
                 android:layout_marginHorizontal="1dp"
