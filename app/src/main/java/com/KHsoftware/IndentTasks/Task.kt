@@ -395,13 +395,13 @@ open class Task(
         // 親タスクのViewに追加
         if(insert == null){
             if(parentView == null){
-                TaskBuilder.taskContainer?.addView(subtaskLinearLayout)
+                TaskBuilder.taskContainer.addView(subtaskLinearLayout)
             }else{
                 parentView.addView(subtaskLinearLayout)
             }
         }else{
             if(parentView == null){
-                TaskBuilder.taskContainer?.addView(subtaskLinearLayout, insert)
+                TaskBuilder.taskContainer.addView(subtaskLinearLayout, insert)
             }else{
                 parentView.addView(subtaskLinearLayout, insert)
             }

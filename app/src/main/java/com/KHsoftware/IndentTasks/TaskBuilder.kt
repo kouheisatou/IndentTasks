@@ -6,13 +6,14 @@ import android.util.Log
 import com.jmedeisis.draglinearlayout.DragLinearLayout
 import java.io.*
 
-class TaskBuilder(private val fileName: String, private val context: Context, private val taskContainer: DragLinearLayout, private val viewModel: TaskViewModel) {
+class TaskBuilder(private val fileName: String, private val context: Context, private val taskContainer: DragLinearLayout, private val viewModel: TaskViewModel, private val taskFragment: TaskFragment) {
 
     companion object {
         @SuppressLint("StaticFieldLeak")
         lateinit var context: Context
         @SuppressLint("StaticFieldLeak")
         lateinit var taskContainer: DragLinearLayout
+        lateinit var taskFragment: TaskFragment
         @SuppressLint("StaticFieldLeak")
         lateinit var viewModel: TaskViewModel
     }
@@ -25,6 +26,7 @@ class TaskBuilder(private val fileName: String, private val context: Context, pr
         TaskBuilder.context = context
         TaskBuilder.taskContainer = taskContainer
         TaskBuilder.viewModel = viewModel
+        TaskBuilder.taskFragment = taskFragment
 
         val br = readFile(context, fileName)
         var line = br?.readLine()
@@ -65,13 +67,13 @@ class TaskBuilder(private val fileName: String, private val context: Context, pr
 
     fun saveFile(context: Context, fileName: String){
 
-        val file = File(context.filesDir, fileName)
-
-        val text = masterTask.export()
-
-        Log.d("export", text)
-
         try {
+
+            val file = File(context.filesDir, fileName)
+
+            val text = masterTask.export()
+
+            Log.d("export", text)
             file.writeText(text)
         } catch (e: IOException) {
             e.printStackTrace()
@@ -79,9 +81,9 @@ class TaskBuilder(private val fileName: String, private val context: Context, pr
     }
 
     fun readFile(context: Context, fileName: String): BufferedReader {
-        val file = File(context.filesDir, fileName)
-
+        var file: File? = null
         try {
+            file = File(context.filesDir, fileName)
             if(file.createNewFile()){
                 file.writeText("+[ ]$fileName")
             }else{

@@ -64,7 +64,7 @@ class TaskFragment : Fragment() {
 
     fun loadFile(filename: String){
         taskContainer.removeAllViews()
-        taskBuilder = TaskBuilder(filename, requireContext(), taskContainer, viewModel)
+        taskBuilder = TaskBuilder(filename, requireContext(), taskContainer, viewModel, this)
         viewModel.viewModelScope.launch {
             taskBuilder.build()
         }

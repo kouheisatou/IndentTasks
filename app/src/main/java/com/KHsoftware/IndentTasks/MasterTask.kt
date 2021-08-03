@@ -140,7 +140,7 @@ class MasterTask(
                 } catch (e: IOException) {
                     e.printStackTrace()
                 }
-                (TaskBuilder.context as TaskFragment).updateSpinner(null)
+                TaskBuilder.taskFragment.updateSpinner(null)
             })
             .setNegativeButton("キャンセル", null)
             .show()
