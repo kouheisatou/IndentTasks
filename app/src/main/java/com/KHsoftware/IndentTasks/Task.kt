@@ -410,7 +410,10 @@ open class Task(
             task.initUI(subtaskLinearLayout)
         }
 
-        foldSubtasks(fold, false)
+        // マスタータスクでは実行しない
+        if(parent != null){
+            foldSubtasks(fold, false)
+        }
 
 
     }
