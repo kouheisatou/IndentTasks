@@ -349,7 +349,7 @@ open class Task(
         val editText = EditText(TaskBuilder.context)
         editText.setText(contentsText.text)
         editText.isVisible = false
-        editText.maxLines = 1
+        editText.inputType = InputType.TYPE_CLASS_TEXT
         editText.setOnKeyListener { v, keyCode, event ->
             if(event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER){
                 val inputMethodManager = TaskBuilder.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager

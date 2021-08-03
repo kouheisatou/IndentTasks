@@ -139,7 +139,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // エンターキーでタスク追加
-        editText.maxLines = 1
+        editText.inputType = InputType.TYPE_CLASS_TEXT
         editText.setOnKeyListener { v, keyCode, event ->
             if(event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER){
                 taskBuilder.masterTask.addTaskToSelected(editText.text.toString())
