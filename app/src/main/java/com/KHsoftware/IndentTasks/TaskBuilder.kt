@@ -21,6 +21,9 @@ class TaskBuilder(private val fileName: String, private val context: Context, pr
     /** 全ての親タスク **/
     lateinit var masterTask: MasterTask
 
+    /** undo,redo用のユーザ操作保持配列 **/
+    val history = mutableListOf<Array<out Any>>()
+
     fun build(){
 
         TaskBuilder.context = context

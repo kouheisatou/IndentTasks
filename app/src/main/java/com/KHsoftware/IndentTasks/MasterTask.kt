@@ -131,7 +131,7 @@ class MasterTask(
     fun deleteSelectedFile(filename: String){
         AlertDialog.Builder(TaskBuilder.context)
             .setTitle("タスクリスト削除")
-            .setMessage("本当に削除しますか？")
+            .setMessage("本当に削除しますか？\nこの操作は取り消せません。")
             .setPositiveButton("削除", DialogInterface.OnClickListener(){ dialog, which ->
                 try {
                     val file = File(TaskBuilder.context.filesDir, filename)

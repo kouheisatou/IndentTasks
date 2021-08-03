@@ -45,6 +45,14 @@ open class Task(
     lateinit var subtaskLinearLayout: DragLinearLayout
     /** 折り畳み/展開ボタン **/
     lateinit var foldButton: ImageView
+    /** 完了チェックボックス **/
+    lateinit var chk: CheckBox
+    // タスクの内容TextView
+    lateinit var contentsText: TextView
+    // タスク編集時のEditText
+    lateinit var editText: EditText
+    // 確定ボタン
+    lateinit var confirmBtn: TextView
 
     open fun generateId(): Int{
         val mt = masterTask ?: return 0
@@ -158,10 +166,12 @@ open class Task(
             if(id == task.id){
                 // 選択されているタスクを削除した時
                 if(id == masterTask?.selectedTask?.id){
-                    masterTask?.selectedTask = null
+                    masterTask.selectedTask = null
                 }
                 subTasks.remove(task)
                 this.subtaskLinearLayout.removeView(task.subtaskLinearLayout)
+
+                addHistory("delete", this.id)
                 return
             }else{
                 // idが一致しない場合、さらに下の階層もidで検索
@@ -196,6 +206,8 @@ open class Task(
             newTask.subtaskLinearLayout.setBackgroundColor(Color.parseColor("#DDDDDD"))
             setSubtaskDraggable(true, this)
         }
+
+        addHistory("add", this.id, contents)
     }
 
     override fun foldSubtasks(fold: Boolean, applyToSubtasks: Boolean){
@@ -283,6 +295,39 @@ open class Task(
     @SuppressLint("SetTextI18n")
     open fun initUI(parentView: DragLinearLayout?, insert: Int? = null){
 
+        fun onChecked(){
+            done = chk.isChecked
+            save()
+
+            addHistory("check", this.id, false)
+        }
+
+        fun onConfirmed(){
+            contentsText.text = if(editText.text.toString() == ""){"未入力タスク"}else{editText.text}
+            contentsText.isVisible = true
+            editText.isVisible = false
+            confirmBtn.isVisible = false
+            contents = editText.text.toString()
+            save()
+
+            addHistory("edit", this.id, contents)
+        }
+
+        fun onFold(){
+            fold = !fold
+            foldSubtasks(fold, false)
+            save()
+
+            addHistory("fold", this.id, false)
+        }
+
+        fun onStartingEdit(){
+            contentsText.isVisible = false
+            editText.isVisible = true
+            confirmBtn.isVisible = true
+            save()
+        }
+
         // タスク全体のLinearLayout
         subtaskLinearLayout = DragLinearLayout(TaskBuilder.context)
         subtaskLinearLayout.orientation = LinearLayout.VERTICAL
@@ -309,11 +354,10 @@ open class Task(
         }
 
         // 完了チェックボックス
-        val chk = CheckBox(TaskBuilder.context)
+        chk = CheckBox(TaskBuilder.context)
         chk.isChecked = done
         chk.setOnClickListener(){
-            done = chk.isChecked
-            save()
+            onChecked()
         }
         // 長押しでタスク選択
         chk.setOnLongClickListener(){
@@ -322,17 +366,17 @@ open class Task(
         }
 
         // タスクの内容TextView
-        val contentsText = TextView(TaskBuilder.context)
+        contentsText = TextView(TaskBuilder.context)
         contentsText.text = if(contents == ""){"未入力タスク"}else{contents}
 
         // 確定ボタン
-        val confirmBtn = TextView(TaskBuilder.context)
+        confirmBtn = TextView(TaskBuilder.context)
         confirmBtn.text = "↩︎"
         confirmBtn.textSize = 30f
         confirmBtn.isVisible = false
 
         // タスク編集時のEditText
-        val editText = EditText(TaskBuilder.context)
+        editText = EditText(TaskBuilder.context)
         editText.setText(contentsText.text)
         editText.isVisible = false
         editText.inputType = InputType.TYPE_CLASS_TEXT
@@ -340,13 +384,7 @@ open class Task(
             if(event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER){
                 val inputMethodManager = TaskBuilder.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
                 inputMethodManager.hideSoftInputFromWindow(editText.windowToken, InputMethodManager.RESULT_UNCHANGED_SHOWN)
-                contentsText.text = if(editText.text.toString() == ""){"未入力タスク"}else{editText.text}
-                contentsText.isVisible = true
-                editText.isVisible = false
-                confirmBtn.isVisible = false
-                editText.setText(editText.text.toString().replace("\n", ""))
-                contents = editText.text.toString()
-                save()
+                onConfirmed()
             }
             false
         }
@@ -359,30 +397,20 @@ open class Task(
         )
         foldButton.layoutParams = buttonParams
         foldButton.setOnClickListener(){
-            fold = !fold
-            foldSubtasks(fold, false)
-            save()
+            onFold()
         }
         // サブタスクが0の時以外折り畳みボタン表示
         foldButton.alpha = if(subTasks.size == 0) { 0f } else { 1f }
 
         // タスク内容テキスト編集時の挙動
         contentsText.setOnClickListener(){
+            // マスタータスク以外の時実行
             if(parent != null){
-                contentsText.isVisible = false
-                editText.isVisible = true
-                confirmBtn.isVisible = true
-                save()
+                onStartingEdit()
             }
         }
         confirmBtn.setOnClickListener(){
-            contentsText.text = editText.text
-            contentsText.isVisible = true
-            editText.isVisible = false
-            confirmBtn.isVisible = false
-            contentsText.text = if(editText.text.toString() == ""){"未入力タスク"}else{editText.text}
-            contents = editText.text.toString()
-            save()
+            onConfirmed()
         }
 
         // 各Viewをアタッチ
@@ -416,13 +444,82 @@ open class Task(
         if(parent != null){
             foldSubtasks(fold, false)
         }
-
-
     }
 
     open fun save(){
         TaskBuilder.viewModel.viewModelScope.launch {
             taskBuilder.saveFile(TaskBuilder.context, masterTask!!.contents)
         }
+    }
+
+
+
+    // 以下undo,redo処理で使用するメソッド
+
+    override fun add(id: Int, contents: String) {
+        if(this.id == id){
+            addSubtask(contents, taskBuilder.masterTask, taskBuilder)
+        }else{
+            for(task in subTasks){
+                add(id, contents)
+            }
+        }
+    }
+
+    override fun check(isDone: Boolean, id: Int, applyToSubtasks: Boolean) {
+        if(this.id == id){
+            chk.isChecked = isDone
+            done = isDone
+            if(applyToSubtasks){
+                for(task in subTasks){
+                    check(isDone, id, applyToSubtasks)
+                }
+            }
+        }else{
+            for(task in subTasks){
+                check(isDone, id, applyToSubtasks)
+            }
+        }
+    }
+
+    override fun fold(fold: Boolean, id: Int, applyToSubtasks: Boolean) {
+        if(this.id == id){
+            this.fold = fold
+            if(applyToSubtasks){
+                for(task in subTasks){
+                    fold(fold, id, applyToSubtasks)
+                }
+            }
+        }else{
+            for(task in subTasks){
+                fold(fold, id, applyToSubtasks)
+            }
+        }
+    }
+
+    override fun swap(parent: Task?, indexA: Int, indexB: Int) {
+        val parentTask = parent?: taskBuilder.masterTask
+        val temp = parentTask.subTasks[indexA]
+        parentTask.subTasks[indexA] = parentTask.subTasks[indexB]
+        parentTask.subTasks[indexB] = temp
+    }
+
+    override fun delete(id: Int) {
+        deleteSubtaskById(id)
+    }
+
+    override fun edit(id: Int, contents: String) {
+        findTaskById(id)?.contents = contents
+    }
+
+    fun addHistory(vararg parameter: Any){
+        taskBuilder.history.add(parameter)
+        Log.d("history", taskBuilder.history.let {
+            var s = ""
+            for(i in it){
+                s += "[${i[0]}, ${i.getOrNull(1)}, ${i.getOrNull(2) ?: ""}], "
+            }
+            s
+        })
     }
 }
