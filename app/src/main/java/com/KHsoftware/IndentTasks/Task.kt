@@ -73,7 +73,7 @@ open class Task(
                 setSubtaskDraggable(true, this)
             }else{
                 // ドラッグを無効化
-                setSubtaskDraggable(false, this)
+                masterTask.setSubtaskDraggable(false, this)
             }
 
             // 選択状態をリセット
@@ -420,6 +420,5 @@ open class Task(
 
     open fun save(){
         taskBuilder.saveFile(TaskBuilder.context, masterTask!!.contents)
-//        Log.d("save", "save")
     }
 }
