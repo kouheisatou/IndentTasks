@@ -10,14 +10,19 @@ import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.children
 import com.jmedeisis.draglinearlayout.DragLinearLayout
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
+import kotlin.coroutines.coroutineContext
 
 @SuppressLint("StaticFieldLeak")
 class MasterTask(
     done: Boolean,
     contents: String,
-    fold: Boolean
+    fold: Boolean,
+    taskBuilder: TaskBuilder
 ):
     Task(
         done,
@@ -26,7 +31,8 @@ class MasterTask(
         0,
         null,
         fold,
-        null
+        null,
+        taskBuilder
     ){
 
     /** 作成したサブタスクの総数を保持 **/
@@ -36,46 +42,8 @@ class MasterTask(
 
     override fun generateId() = 0
 
-    override fun findTaskById(id: Int): Task?{
-        var result: Task? = null
-        for(task in subTasks){
-            result = task.findTaskById(id)
-            if(result != null) return result
-        }
-        return result
-    }
-
-    fun foldAllTask(fold: Boolean){
-        for(subtask in subTasks){
-            subtask.foldSubtasks(fold, true)
-        }
-    }
-
-    /**
-     * 選択されたタスクのサブタスクとして新規タスクを追加する
-     */
-    fun addTaskToSelected(contents: String){
-        val selectedTask = selectedTask ?: this
-        if(contents == ""){
-            selectedTask.addSubtask("未入力タスク", this)
-        }else{
-            selectedTask.addSubtask(contents, this)
-        }
-        setFoldButton()
-    }
-
-    fun removeSelectedTask(){
-        val selectedTask = this.selectedTask ?: return
-        if(selectedTask.id == 0){
-//            subTasks.clear()
-//            subtaskLinearLayout.removeAllViews()
-//            initUI(subtaskLinearLayout)
-//            unselectAllSubtasks()
-            deleteSelectedFile(contents)
-        }else{
-            deleteSubtaskById(selectedTask.id)
-        }
-        setFoldButton()
+    override fun selectAt(id: Int, select: Boolean) {
+        super.selectAt(id, select)
     }
 
     override fun makeAllSubtaskSelected(select: Boolean){
@@ -100,6 +68,64 @@ class MasterTask(
         }
     }
 
+    override fun deleteSubtaskById(id: Int) {
+
+        if(id == 0){
+            deleteSelectedFile(contents)
+        }else{
+            super.deleteSubtaskById(id)
+        }
+        setFoldButton()
+        save()
+
+    }
+
+    override fun foldSubtasks(fold: Boolean, applyToSubtasks: Boolean) {
+        for(subtask in subTasks){
+            subtask.foldSubtasks(fold, true)
+        }
+        save()
+    }
+
+    override fun findTaskById(id: Int): Task?{
+        var result: Task? = null
+        for(task in subTasks){
+            result = task.findTaskById(id)
+            if(result != null) return result
+        }
+        return result
+    }
+
+    override fun export(): String {
+        return super.export()
+    }
+
+    override fun setSubtaskDraggable(draggable: Boolean, selectedTask: Task) {
+        super.setSubtaskDraggable(draggable, selectedTask)
+    }
+
+    /**
+     * 選択されたタスクのサブタスクとして新規タスクを追加する
+     */
+    override fun addSubtask(contents: String, masterTask: MasterTask?, taskBuilder: TaskBuilder) {
+        val selectedTask = selectedTask ?: this
+        if(selectedTask != this){
+            if(contents == ""){
+                selectedTask.addSubtask("未入力タスク", masterTask, taskBuilder)
+            }else{
+                selectedTask.addSubtask(contents, masterTask, taskBuilder)
+            }
+        }else{
+            if(contents == ""){
+                super.addSubtask("未入力タスク", masterTask, taskBuilder)
+            }else{
+                super.addSubtask(contents, masterTask, taskBuilder)
+            }
+        }
+        setFoldButton()
+        save()
+    }
+
     fun deleteSelectedFile(filename: String){
         AlertDialog.Builder(TaskBuilder.context)
             .setTitle("タスクリスト削除")
@@ -118,4 +144,7 @@ class MasterTask(
             .show()
     }
 
+    override fun save(){
+        taskBuilder.saveFile(TaskBuilder.context, contents)
+    }
 }
