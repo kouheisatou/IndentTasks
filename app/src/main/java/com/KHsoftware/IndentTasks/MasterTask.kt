@@ -1,23 +1,14 @@
 package com.KHsoftware.IndentTasks
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.Context
 import android.content.DialogInterface
 import android.graphics.Color
-import android.graphics.drawable.DrawableContainer
 import android.util.Log
 import androidx.appcompat.app.AlertDialog
-import androidx.core.view.children
 import androidx.lifecycle.viewModelScope
-import com.jmedeisis.draglinearlayout.DragLinearLayout
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
-import kotlin.coroutines.coroutineContext
 
 @SuppressLint("StaticFieldLeak")
 class MasterTask(

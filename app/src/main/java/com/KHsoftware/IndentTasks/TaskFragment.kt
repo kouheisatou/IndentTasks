@@ -14,8 +14,7 @@ import android.widget.ArrayAdapter
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.viewModelScope
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.task_fragment.*
+import com.KHsoftware.IndentTasks.databinding.TaskFragmentBinding
 import kotlinx.coroutines.launch
 
 class TaskFragment : Fragment() {
@@ -25,24 +24,26 @@ class TaskFragment : Fragment() {
     }
 
     private lateinit var viewModel: TaskViewModel
+    lateinit var binding: TaskFragmentBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        binding = TaskFragmentBinding.inflate(inflater)
         return inflater.inflate(R.layout.task_fragment, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(TaskViewModel::class.java)
+        viewModel = ViewModelProvider(this)[TaskViewModel::class.java]
 
         setListeners()
     }
 
     fun getFilesName(): MutableList<String>{
-        var files: Array<String> = requireContext().fileList()
-        var arr = mutableListOf<String>()
+        val files: Array<String> = requireContext().fileList()
+        val arr = mutableListOf<String>()
         arr.addAll(files)
         arr.add("新規作成")
         return arr
@@ -59,12 +60,12 @@ class TaskFragment : Fragment() {
         }
         adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, files)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        loadSpinner.adapter = adapter
+        binding.loadSpinner.adapter = adapter
     }
 
     fun loadFile(filename: String){
-        taskContainer.removeAllViews()
-        taskBuilder = TaskBuilder(filename, requireContext(), taskContainer, viewModel)
+        binding.taskContainer.removeAllViews()
+        taskBuilder = TaskBuilder(filename, requireContext(), binding.taskContainer, viewModel)
         viewModel.viewModelScope.launch {
             taskBuilder.build()
         }
@@ -77,22 +78,22 @@ class TaskFragment : Fragment() {
             .setTitle("タイトル入力")
             .setMessage("タスクリストのタイトルを入力してください")
             .setView(title)
-            .setPositiveButton("作成", DialogInterface.OnClickListener(){ dialog, which ->
+            .setPositiveButton("作成") { _, _ ->
                 loadFile("${title.text}.txt")
                 updateSpinner("${title.text}.txt")
                 selectedTaskList = title.text.toString()
-            })
-            .setNegativeButton("キャンセル", DialogInterface.OnClickListener(){ dialog, which ->
+            }
+            .setNegativeButton("キャンセル") { _, _ ->
                 val temp = selectedTaskList
                 updateSpinner(temp)
                 selectedTaskList = title.text.toString()
-            })
+            }
             .show()
     }
 
     fun setListeners(){
         updateSpinner(null)
-        loadSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        binding.loadSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 if(position == files.size -1){
                     createNewTaskListDialog()
@@ -115,34 +116,34 @@ class TaskFragment : Fragment() {
 //            Log.d("exportSelectedTask", taskBuilder.masterTask.selectedTask?.export() ?: "何も選択されていません")
 //        }
 
-        expandBtn.setOnClickListener(){
+        binding.expandBtn.setOnClickListener(){
             taskBuilder.masterTask.foldSubtasks(false, true)
         }
 
-        foldBtn.setOnClickListener(){
+        binding.foldBtn.setOnClickListener(){
             taskBuilder.masterTask.foldSubtasks(true, true)
         }
 
 
         // タスク追加ボタン
-        addButton.setOnClickListener(){
-            taskBuilder.masterTask.addSubtask(editText.text.toString(), taskBuilder.masterTask, taskBuilder)
-            editText.setText("")
+        binding.addButton.setOnClickListener(){
+            taskBuilder.masterTask.addSubtask(binding.editText.text.toString(), taskBuilder.masterTask, taskBuilder)
+            binding.editText.setText("")
         }
 
         // タスク削除ボタン
-        deleteBtn.setOnClickListener(){
+        binding.deleteBtn.setOnClickListener(){
             if(taskBuilder.masterTask.selectedTask != null){
                 taskBuilder.masterTask.deleteSubtaskById(taskBuilder.masterTask.selectedTask!!.id)
             }
         }
 
         // エンターキーでタスク追加
-        editText.inputType = InputType.TYPE_CLASS_TEXT
-        editText.setOnKeyListener { v, keyCode, event ->
+        binding.editText.inputType = InputType.TYPE_CLASS_TEXT
+        binding.editText.setOnKeyListener { _, keyCode, event ->
             if(event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER){
-                taskBuilder.masterTask.addSubtask(editText.text.toString(), taskBuilder.masterTask, taskBuilder)
-                editText.setText("")
+                taskBuilder.masterTask.addSubtask(binding.editText.text.toString(), taskBuilder.masterTask, taskBuilder)
+                binding.editText.setText("")
             }
             false
         }

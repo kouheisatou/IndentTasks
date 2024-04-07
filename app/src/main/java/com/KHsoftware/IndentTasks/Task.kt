@@ -3,23 +3,17 @@ package com.KHsoftware.IndentTasks
 import android.animation.LayoutTransition
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.Color
 import android.text.InputType
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
-import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.core.view.isVisible
-import androidx.core.view.marginLeft
 import androidx.lifecycle.viewModelScope
 import com.jmedeisis.draglinearlayout.DragLinearLayout
-import kotlinx.android.synthetic.main.activity_main.view.*
 import kotlinx.coroutines.launch
-import java.lang.Exception
-import kotlin.math.abs
 
 // できるだけ画面描画は描画するだけ、内部処理の結果を出すだけにする -> redraw()
 // todo Taskを継承してmasterTaskを作成、これは一つしか存在しないsingleton
@@ -148,7 +142,7 @@ open class Task(
 
     fun setAllSubtaskStatus(status: Boolean){
         for(i in subTasks){
-            i.done == status
+            i.done = status
         }
     }
 
@@ -158,7 +152,7 @@ open class Task(
             if(id == task.id){
                 // 選択されているタスクを削除した時
                 if(id == masterTask?.selectedTask?.id){
-                    masterTask?.selectedTask = null
+                    masterTask.selectedTask = null
                 }
                 subTasks.remove(task)
                 this.subtaskLinearLayout.removeView(task.subtaskLinearLayout)
@@ -256,7 +250,7 @@ open class Task(
                 val handle = task.subtaskLinearLayout
                 subtaskLinearLayout.setViewDraggable(dragView, handle)
                 // ドラッグによるviewの入れ替えに伴い、サブタスク配列の順序も入れ替える
-                subtaskLinearLayout.setOnViewSwapListener { firstView, firstPosition, secondView, secondPosition ->
+                subtaskLinearLayout.setOnViewSwapListener { _: View, firstPosition: Int, _: View, secondPosition : Int->
                     Log.d("swap", "$firstPosition <-> $secondPosition")
                     val temp = subTasks[firstPosition - 1]
                     subTasks[firstPosition - 1] = subTasks[secondPosition - 1]
@@ -286,7 +280,7 @@ open class Task(
         // タスク全体のLinearLayout
         subtaskLinearLayout = DragLinearLayout(TaskBuilder.context)
         subtaskLinearLayout.orientation = LinearLayout.VERTICAL
-        var layoutParams = LinearLayout.LayoutParams(
+        val layoutParams = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
         )
         subtaskLinearLayout.layoutParams = layoutParams
@@ -395,13 +389,13 @@ open class Task(
         // 親タスクのViewに追加
         if(insert == null){
             if(parentView == null){
-                TaskBuilder.taskContainer?.addView(subtaskLinearLayout)
+                TaskBuilder.taskContainer.addView(subtaskLinearLayout)
             }else{
                 parentView.addView(subtaskLinearLayout)
             }
         }else{
             if(parentView == null){
-                TaskBuilder.taskContainer?.addView(subtaskLinearLayout, insert)
+                TaskBuilder.taskContainer.addView(subtaskLinearLayout, insert)
             }else{
                 parentView.addView(subtaskLinearLayout, insert)
             }
