@@ -29,16 +29,11 @@ class TaskFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        binding = TaskFragmentBinding.inflate(inflater)
-        return inflater.inflate(R.layout.task_fragment, container, false)
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    ): View {
+        binding = TaskFragmentBinding.inflate(layoutInflater)
         viewModel = ViewModelProvider(this)[TaskViewModel::class.java]
-
         setListeners()
+        return binding.root
     }
 
     fun getFilesName(): MutableList<String>{
